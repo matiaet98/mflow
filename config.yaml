@@ -1,1 +1,23 @@
-a: 1
+global:
+  max_process_concurrency: 5 #Cuantos procesos en simultaneo se pueden correr
+  check_new_config_interval: 1 #Cada cuanto se vuelve a chequear la configuracion
+oracle:
+  etl_user: "FISCA_ETL"
+  etl_password: "FISCA_ETL"
+tasks:
+  - id: 1
+    type: "oracle"
+    command: "begin PRC_CALCULA1('hello'); end;"
+    day: 1 #Que dia del mes corre
+  - id: 2
+    type: "bash"
+    command: "/usr/local/siper/ingestion/calcula2.sh" #podria ser un spark-submit
+    day: 1
+  - id: 3
+    type: "oracle"
+    command: "begin PRC_CALCULA3(); end;"
+    day: 1
+  - id: 4
+    type: "bash"
+    command: "/usr/local/siper/ingestion/calcula4.sh" #podria ser un sqoop
+    day: 5

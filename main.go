@@ -6,12 +6,14 @@ import (
 	"time"
 )
 
-const intervalo time.Duration = time.Second * 2
-
 func main() {
 	for true {
-		time.Sleep(intervalo)
-		conf := config.ReadConfig()
-		fmt.Println("The value is: ", conf.A)
+		Conf := config.ReadConfig()
+		time.Sleep(time.Second * time.Duration(Conf.Global.CheckNewConfigInterval))
+		for _, value := range Conf.Tasks {
+			println(value.ID)
+			println(value.Command)
+		}
+		fmt.Println("Concurrency set to: ", Conf.Global.MaxProcessConcurrency)
 	}
 }
