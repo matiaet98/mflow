@@ -13,3 +13,6 @@ siper
 *.out
 
 .vscode
+
+#Sonar
+.scannerwork
