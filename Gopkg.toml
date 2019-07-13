@@ -24,6 +24,11 @@
 #   go-tests = true
 #   unused-packages = true
 
+[[constraint]]
+    name = "gitlab.com/afip/siper/siper-service"
+    branch = "master"
+    version = "0.1.0"
+    source = "gitlab.com/afip/siper/siper-service"
 
 [prune]
   go-tests = true
