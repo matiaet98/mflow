@@ -2,8 +2,8 @@ global:
   max_process_concurrency: 5 # 1 - 65535: Cuantos procesos en simultaneo se pueden correr
   check_new_config_interval: 1 # 1 - 999999999 Cada cuantos segundos se vuelve a chequear la configuracion
   unknown_action: "PENDING" # PENDING|FAILED|SUCCESS : El estado que se le pone a las tareas que quedaron con estado unknown. El estado unknown se da cuando este servicio termina inesperadamente
-  pid_directory: "$HOME"
-  log_directory: "$HOME/logs"
+  pid_directory: ""
+  log_directory: "logs"
 oracle:
   fisco_connection_string: "(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=ORCLPDB1.localdomain)))"
   misg_connection_string: "(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=ORCLPDB1.localdomain)))"
