@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -9,31 +10,38 @@ import (
 // Conf : struct de configuracion.
 type Conf struct {
 	Global struct {
-		MaxProcessConcurrency  int16 `yaml:"max_process_concurrency"`
-		CheckNewConfigInterval int8  `yaml:"check_new_config_interval"`
+		MaxProcessConcurrency  uint16 `yaml:"max_process_concurrency"`
+		CheckNewConfigInterval uint   `yaml:"check_new_config_interval"`
+		UnknownAction          string `yaml:"unknown_action"`
+		PidDirectory           string `yaml:"pid_directory"`
+		LogDirectory           string `yaml:"log_directory"`
 	} `yaml:"global"`
 	Oracle struct {
-		EtlUser     string `yaml:"etl_user"`
-		EtlPassword string `yaml:"etl_password"`
+		EtlUser               string `yaml:"etl_user"`
+		EtlPassword           string `yaml:"etl_password"`
+		FiscoConnectionString string `yaml:"fisco_connection_string"`
+		MisgConnectionString  string `yaml:"misg_connection_string"`
 	} `yaml:"oracle"`
 	Tasks []struct {
-		ID      int16  `yaml:"id"`
+		ID      uint16 `yaml:"id"`
 		Type    string `yaml:"type"`
 		Command string `yaml:"command"`
-		Day     int8   `yaml:"day"`
+		Day     uint8  `yaml:"day"`
 	}
 }
 
 // ReadConfig : Lee el archivo de configuracion.
-func ReadConfig() Conf {
+func ReadConfig() (Conf, error) {
+	var c Conf
 	yamlFile, err := ioutil.ReadFile("config.yaml")
 	if err != nil {
 		fmt.Printf("yamlFile.Get err   #%v ", err)
+		return c, errors.New(err.Error())
 	}
-	var c Conf
 	err = yaml.Unmarshal(yamlFile, &c)
 	if err != nil {
 		fmt.Printf("yamlFile.Get err   #%v ", err)
+		return c, errors.New(err.Error())
 	}
-	return c
+	return c, nil
 }
