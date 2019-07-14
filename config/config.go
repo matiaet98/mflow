@@ -1,13 +1,15 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 )
+
+//Config : Global donde se guarda la configuracion
+var Config Conf
 
 // Conf : struct de configuracion.
 type Conf struct {
@@ -40,25 +42,34 @@ type Task struct {
 	Day     int    `yaml:"day"`
 }
 
-//Config : Global donde se guarda la configuracion
-var Config Conf
-
-// ReadConfig : Lee el archivo de configuracion.
-func ReadConfig() (Conf, error) {
-	var c Conf
+func getConfigs(path string) error {
 	dir, _ := filepath.Abs(filepath.Dir(os.Args[0])) //obtengo el path del ejecutable
-	yamlFile, err := ioutil.ReadFile(dir + "/config.yaml")
+	yamlFile, err := ioutil.ReadFile(dir + "/" + path)
 	if err != nil {
-		yamlFile, err = ioutil.ReadFile("./config.yaml") //antes de salir con error pruebo en el directorio actual
+		yamlFile, err = ioutil.ReadFile("./" + path) //antes de salir con error pruebo en el directorio actual
 		if err != nil {
-			fmt.Printf("%v", err)
-			return c, errors.New(err.Error())
+			return err
 		}
 	}
-	err = yaml.Unmarshal(yamlFile, &c)
+	err = yaml.Unmarshal(yamlFile, &Config)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+// ReadConfig : Lee el archivo de configuracion.
+func ReadConfig() error {
+	var err error
+	err = getConfigs("config.yaml")
 	if err != nil {
 		fmt.Printf("%v", err)
-		return c, errors.New(err.Error())
+		return err
 	}
-	return c, nil
+	err = getConfigs("oracle.yaml")
+	if err != nil {
+		fmt.Printf("%v", err)
+		return err
+	}
+	return err
 }

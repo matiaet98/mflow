@@ -40,14 +40,14 @@ func (ps BashProcess) Run() (string, error) {
 func (ps OracleProcess) Run() (string, error) {
 	db, err := sql.Open("goracle", ps.User+"/"+ps.Password+"@"+ps.ConnectionString)
 	if err != nil {
-		fmt.Println("Error: ", err)
+		fmt.Println(err)
 		return "", err
 	}
 	defer db.Close()
 	var output string
 	_, err = db.Exec(ps.Command, sql.Named("respuesta", sql.Out{Dest: &output}))
 	if err != nil {
-		fmt.Println("Error: ", err)
+		fmt.Println(err)
 		return "", err
 	}
 	return output, nil

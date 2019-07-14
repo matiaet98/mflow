@@ -3,11 +3,6 @@ global:
   check_new_config_interval: 10 # 1 - 999999999 Cada cuantos segundos se vuelve a chequear la configuracion
   unknown_action: "PENDING" # PENDING|FAILED|SUCCESS : El estado que se le pone a las tareas que quedaron con estado unknown. El estado unknown se da cuando este servicio termina inesperadamente
   log_directory: "logs"
-oracle:
-  fisco_connection_string: "(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=127.0.0.1)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=ORCLPDB1.localdomain)))"
-  misg_connection_string: "(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=127.0.0.1)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=ORCLPDB1.localdomain)))"
-  etl_user: "FISCA_ETL"
-  etl_password: "FISCA_ETL"
 tasks: #importante nunca cambiar el ID de una tarea, sino se pierde su historia (o se mezcla con la de otro)
   - id: 1
     type: "oracle"
@@ -58,6 +53,34 @@ tasks: #importante nunca cambiar el ID de una tarea, sino se pierde su historia 
     command: "/usr/local/siper/ingestion/calcula11.sh"
     day: 15
   - id: 12
+    type: "oracle"
+    command: "declare
+      respuesta varchar2(32767);
+      begin
+      :respuesta := siper.fnc_test(1);
+      end;"
+    day: 14
+  - id: 13
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula12.sh"
     day: 15
+  - id: 14
+    type: "oracle"
+    command: "declare
+      respuesta varchar2(32767);
+      begin
+      :respuesta := siper.fnc_test(1);
+      end;"
+    day: 14
+  - id: 15
+    type: "bash"
+    command: "/home/matiaet98/test2.sh"
+    day: 14
+  - id: 16
+    type: "oracle"
+    command: "declare
+      respuesta varchar2(32767);
+      begin
+      :respuesta := siper.fnc_test(1);
+      end;"
+    day: 14

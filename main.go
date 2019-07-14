@@ -12,7 +12,7 @@ import (
 
 func init() {
 	var err error
-	config.Config, err = config.ReadConfig()
+	err = config.ReadConfig()
 	if err != nil {
 		fmt.Println("Error: Revise la configuracion")
 		os.Exit(1) //Salgo con error porque no pude ni leer la config
@@ -35,7 +35,7 @@ func main() {
 	go signalCatcher()
 	var err error
 	for {
-		config.Config, err = config.ReadConfig()
+		err = config.ReadConfig()
 		if err != nil {
 			fmt.Println("Error: Revise la configuracion")
 			os.Exit(1)
