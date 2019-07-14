@@ -24,36 +24,36 @@ tasks: #importante nunca cambiar el ID de una tarea, sino se pierde su historia 
   - id: 4
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula4.sh" #podria ser un sqoop
-    day: 14
+    day: 15
   - id: 5
     type: "bash"
-    command: "/usr/local/siper/ingestion/calcula5.sh"
+    command: "/home/matiaet98/test.sh"
     day: 14
   - id: 6
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula6.sh"
-    day: 14
+    day: 15
   - id: 7
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula7.sh"
-    day: 14
+    day: 15
   - id: 8
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula8.sh"
-    day: 14
+    day: 15
   - id: 9
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula9.sh"
-    day: 14
+    day: 15
   - id: 10
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula10.sh"
-    day: 14
+    day: 15
   - id: 11
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula11.sh"
-    day: 14
+    day: 15
   - id: 12
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula12.sh"
-    day: 14
+    day: 15

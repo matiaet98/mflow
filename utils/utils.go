@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"siper/config"
+	"siper/processes"
 	"sync"
 	"time"
 )
@@ -26,8 +27,16 @@ func GetTasksOfTheDay(AllTasks []config.Task) []config.Task {
 
 func runTask(task config.Task, wg *sync.WaitGroup) {
 	defer wg.Done()
-	fmt.Println(task.Command)
-	time.Sleep(time.Second * 5)
+	var output string
+	var ps processes.Process
+	switch task.Type {
+	case "bash":
+		ps = processes.BashProcess{Command: task.Command}
+	case "oracle":
+		fmt.Println("No implementado aun") //TODO: implementar llamados a oracle
+	}
+	output = ps.Run()
+	fmt.Println(output)
 }
 
 //RunTasks : Corre todas las tareas del slice que recibe
