@@ -10,12 +10,9 @@ import (
 	"time"
 )
 
-//Config : Global donde se guarda la configuracion
-var Config config.Conf
-
 func init() {
 	var err error
-	Config, err = config.ReadConfig()
+	config.Config, err = config.ReadConfig()
 	if err != nil {
 		fmt.Println("Error: Revise la configuracion")
 		os.Exit(1) //Salgo con error porque no pude ni leer la config
@@ -36,14 +33,15 @@ func salir() {
 
 func main() {
 	go signalCatcher()
+	var err error
 	for {
-		Conf, err := config.ReadConfig()
+		config.Config, err = config.ReadConfig()
 		if err != nil {
 			fmt.Println("Error: Revise la configuracion")
 			os.Exit(1)
 		}
-		TasksOfTheDay := utils.GetTasksOfTheDay(Conf.Tasks)
-		utils.RunTasks(TasksOfTheDay, Conf.Global.MaxProcessConcurrency)
-		time.Sleep(time.Second * time.Duration(Conf.Global.CheckNewConfigInterval))
+		TasksOfTheDay := utils.GetTasksOfTheDay(config.Config.Tasks)
+		utils.RunTasks(TasksOfTheDay, config.Config.Global.MaxProcessConcurrency)
+		time.Sleep(time.Second * time.Duration(config.Config.Global.CheckNewConfigInterval))
 	}
 }

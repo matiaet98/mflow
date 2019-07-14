@@ -28,14 +28,23 @@ func GetTasksOfTheDay(AllTasks []config.Task) []config.Task {
 func runTask(task config.Task, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var output string
+	var err error
 	var ps processes.Process
 	switch task.Type {
 	case "bash":
 		ps = processes.BashProcess{Command: task.Command}
 	case "oracle":
-		fmt.Println("No implementado aun") //TODO: implementar llamados a oracle
+		ps = processes.OracleProcess{
+			User:             config.Config.EtlUser,
+			Password:         config.Config.EtlPassword,
+			ConnectionString: config.Config.FiscoConnectionString,
+			Command:          task.Command}
 	}
-	output = ps.Run()
+	output, err = ps.Run()
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
 	fmt.Println(output)
 }
 

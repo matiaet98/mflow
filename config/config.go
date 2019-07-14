@@ -40,6 +40,9 @@ type Task struct {
 	Day     int    `yaml:"day"`
 }
 
+//Config : Global donde se guarda la configuracion
+var Config Conf
+
 // ReadConfig : Lee el archivo de configuracion.
 func ReadConfig() (Conf, error) {
 	var c Conf
