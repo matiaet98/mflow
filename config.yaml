@@ -1,6 +1,6 @@
 global:
-  max_process_concurrency: 5 # 1 - 65535: Cuantos procesos en simultaneo se pueden correr
-  check_new_config_interval: 1 # 1 - 999999999 Cada cuantos segundos se vuelve a chequear la configuracion
+  max_process_concurrency: 3 # 1 - 65535: Cuantos procesos en simultaneo se pueden correr
+  check_new_config_interval: 10 # 1 - 999999999 Cada cuantos segundos se vuelve a chequear la configuracion
   unknown_action: "PENDING" # PENDING|FAILED|SUCCESS : El estado que se le pone a las tareas que quedaron con estado unknown. El estado unknown se da cuando este servicio termina inesperadamente
   log_directory: "logs"
 oracle:
@@ -16,7 +16,7 @@ tasks: #importante nunca cambiar el ID de una tarea, sino se pierde su historia 
   - id: 2
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula2.sh" #podria ser un spark-submit
-    day: 1
+    day: 4
   - id: 3
     type: "oracle"
     command: "begin PRC_CALCULA3(); end;"
@@ -24,4 +24,36 @@ tasks: #importante nunca cambiar el ID de una tarea, sino se pierde su historia 
   - id: 4
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula4.sh" #podria ser un sqoop
-    day: 5
+    day: 14
+  - id: 5
+    type: "bash"
+    command: "/usr/local/siper/ingestion/calcula5.sh"
+    day: 14
+  - id: 6
+    type: "bash"
+    command: "/usr/local/siper/ingestion/calcula6.sh"
+    day: 14
+  - id: 7
+    type: "bash"
+    command: "/usr/local/siper/ingestion/calcula7.sh"
+    day: 14
+  - id: 8
+    type: "bash"
+    command: "/usr/local/siper/ingestion/calcula8.sh"
+    day: 14
+  - id: 9
+    type: "bash"
+    command: "/usr/local/siper/ingestion/calcula9.sh"
+    day: 14
+  - id: 10
+    type: "bash"
+    command: "/usr/local/siper/ingestion/calcula10.sh"
+    day: 14
+  - id: 11
+    type: "bash"
+    command: "/usr/local/siper/ingestion/calcula11.sh"
+    day: 14
+  - id: 12
+    type: "bash"
+    command: "/usr/local/siper/ingestion/calcula12.sh"
+    day: 14

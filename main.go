@@ -5,14 +5,13 @@ import (
 	"os"
 	"os/signal"
 	"siper/config"
+	"siper/utils"
 	"syscall"
 	"time"
 )
 
 //Config : Global donde se guarda la configuracion
 var Config config.Conf
-
-const pidFilename string = "siper.pid"
 
 func init() {
 	var err error
@@ -23,15 +22,16 @@ func init() {
 	}
 }
 
-func salir() {
-	os.Exit(0)
-}
-
 func signalCatcher() {
 	sigChan := make(chan os.Signal)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	<-sigChan
 	salir()
+}
+
+//Salir : Se ejecuta cuando se sale del programa
+func salir() {
+	os.Exit(0)
 }
 
 func main() {
@@ -42,10 +42,8 @@ func main() {
 			fmt.Println("Error: Revise la configuracion")
 			os.Exit(1)
 		}
+		TasksOfTheDay := utils.GetTasksOfTheDay(Conf.Tasks)
+		utils.RunTasks(TasksOfTheDay, Conf.Global.MaxProcessConcurrency)
 		time.Sleep(time.Second * time.Duration(Conf.Global.CheckNewConfigInterval))
-		for _, value := range Conf.Tasks {
-			fmt.Println(value.ID)
-			fmt.Println(value.Command)
-		}
 	}
 }
