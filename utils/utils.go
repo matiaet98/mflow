@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"siper/config"
 	"siper/processes"
-	"sync"
 	"time"
 )
 
@@ -25,8 +24,8 @@ func GetTasksOfTheDay(AllTasks []config.Task) []config.Task {
 	return tasks
 }
 
-func runTask(task config.Task, wg *sync.WaitGroup) {
-	defer wg.Done()
+func runTask(task config.Task, sem chan bool) {
+	defer func() { <-sem }()
 	var output string
 	var err error
 	var ps processes.Process
@@ -50,13 +49,12 @@ func runTask(task config.Task, wg *sync.WaitGroup) {
 
 //RunTasks : Corre todas las tareas del slice que recibe
 func RunTasks(AllTasks []config.Task, maxParallel int) {
-	var wg sync.WaitGroup
-	for index, task := range AllTasks {
-		if index%maxParallel == 0 {
-			wg.Wait() //espera a que terminen todas las goroutines que se mandaron en paralelo
-		}
-		wg.Add(1)
-		go runTask(task, &wg)
+	sem := make(chan bool, maxParallel)
+	for _, task := range AllTasks {
+		sem <- true
+		go runTask(task, sem)
 	}
-
+	for i := 0; i < cap(sem); i++ {
+		sem <- true
+	}
 }
