@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"siper/config"
-	"siper/utils"
+	"siper/tasks"
 	"syscall"
 	"time"
 )
@@ -40,8 +40,8 @@ func main() {
 			fmt.Println("Error: Revise la configuracion")
 			os.Exit(1)
 		}
-		TasksOfTheDay := utils.GetTasksOfTheDay(config.Config.Tasks)
-		utils.RunTasks(TasksOfTheDay, config.Config.Global.MaxProcessConcurrency)
+		TasksOfTheDay := tasks.GetTasksOfTheDay(config.Config.Tasks)
+		tasks.RunTasks(TasksOfTheDay, config.Config.Global.MaxProcessConcurrency)
 		time.Sleep(time.Second * time.Duration(config.Config.Global.CheckNewConfigInterval))
 	}
 }

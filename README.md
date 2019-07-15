@@ -34,5 +34,4 @@ _Warning: El unico parametro que **NO** se debe modificar es el ID de cada proce
 ### TODO
 
 - [ ] Obtener el estado de las tareas en tabla de oracle
-- [ ] Arreglar la sincronizacion de procesos: Hoy se largan en paralelo segun el parametro de maxima concurrencia, pero no se vuelve a cargar el buffer hasta que todos terminen.
 - [ ] Toda la implementacion de Loggging
