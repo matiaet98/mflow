@@ -10,7 +10,7 @@ tasks: #importante nunca cambiar el ID de una tarea, sino se pierde su historia 
       begin
       :respuesta := siper.fnc_test(1);
       end;"
-    day: 14 #Que dia del mes corre
+    day: 15 #Que dia del mes corre
   - id: 2
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula2.sh" #podria ser un spark-submit
@@ -22,35 +22,35 @@ tasks: #importante nunca cambiar el ID de una tarea, sino se pierde su historia 
   - id: 4
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula4.sh" #podria ser un sqoop
-    day: 15
+    day: 16
   - id: 5
     type: "bash"
     command: "/home/matiaet98/test.sh"
-    day: 14
+    day: 15
   - id: 6
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula6.sh"
-    day: 15
+    day: 16
   - id: 7
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula7.sh"
-    day: 15
+    day: 16
   - id: 8
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula8.sh"
-    day: 15
+    day: 16
   - id: 9
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula9.sh"
-    day: 15
+    day: 16
   - id: 10
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula10.sh"
-    day: 15
+    day: 16
   - id: 11
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula11.sh"
-    day: 15
+    day: 16
   - id: 12
     type: "oracle"
     command: "declare
@@ -58,11 +58,11 @@ tasks: #importante nunca cambiar el ID de una tarea, sino se pierde su historia 
       begin
       :respuesta := siper.fnc_test(1);
       end;"
-    day: 14
+    day: 15
   - id: 13
     type: "bash"
     command: "/usr/local/siper/ingestion/calcula12.sh"
-    day: 15
+    day: 16
   - id: 14
     type: "oracle"
     command: "declare
@@ -70,11 +70,11 @@ tasks: #importante nunca cambiar el ID de una tarea, sino se pierde su historia 
       begin
       :respuesta := siper.fnc_test(1);
       end;"
-    day: 14
+    day: 15
   - id: 15
     type: "bash"
     command: "/home/matiaet98/test2.sh"
-    day: 14
+    day: 15
   - id: 16
     type: "oracle"
     command: "declare
@@ -82,4 +82,4 @@ tasks: #importante nunca cambiar el ID de una tarea, sino se pierde su historia 
       begin
       :respuesta := siper.fnc_test(1);
       end;"
-    day: 14
+    day: 15
