@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+const runningStatus string = "RUNNING"
+const noneStatus string = "NONE"
+const failedStatus string = "FAILED"
+const successStatus string = "SUCCESS"
+
 func getDay() int {
 	return time.Now().Day()
 }
@@ -41,14 +46,14 @@ func runTask(task config.Task, sem chan bool) {
 			ConnectionString: config.Config.FiscoConnectionString,
 			Command:          task.Command}
 	}
-	setTaskStatus(task.ID, "RUNNING")
+	setTaskStatus(task.ID, runningStatus)
 	output, err = ps.Run()
 	if err != nil {
-		fmt.Println("Error: ", err)
-		setTaskStatus(task.ID, "FAILED")
+		fmt.Println(err)
+		setTaskStatus(task.ID, failedStatus)
 		return
 	}
-	setTaskStatus(task.ID, "SUCCESS")
+	setTaskStatus(task.ID, successStatus)
 	fmt.Println(output)
 }
 
@@ -58,13 +63,13 @@ func RunTasks(AllTasks []config.Task, maxParallel int) {
 	for _, task := range AllTasks {
 		status, fecha, err := getTaskStatus(task.ID)
 		if err != nil {
-			fmt.Println("Error: ", err) //no la agrego si hay error
+			fmt.Println(err) //no la agrego si hay error
 			continue
 		}
-		if status == "RUNNING" {
+		if status == runningStatus {
 			continue
 		}
-		if status == "NONE" {
+		if status == noneStatus {
 			PendingTasks = append(PendingTasks, task)
 			continue
 		}
@@ -132,7 +137,7 @@ func setTaskStatus(ID int, status string) (string, error) {
 		return "", err
 	}
 	var command string
-	if status == "RUNNING" {
+	if status == runningStatus {
 		command = `
 		begin
 		siper.pkg_taskman.start_task(:task_id);
