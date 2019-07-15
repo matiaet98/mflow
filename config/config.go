@@ -22,7 +22,6 @@ type Conf struct {
 type Global struct {
 	MaxProcessConcurrency  int    `yaml:"max_process_concurrency"`
 	CheckNewConfigInterval int    `yaml:"check_new_config_interval"`
-	UnknownAction          string `yaml:"unknown_action"`
 	LogDirectory           string `yaml:"log_directory"`
 }
 
