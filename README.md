@@ -33,5 +33,4 @@ _Warning: El unico parametro que **NO** se debe modificar es el ID de cada proce
 
 ### TODO
 
-- [ ] Obtener el estado de las tareas en tabla de oracle
 - [ ] Toda la implementacion de Loggging
