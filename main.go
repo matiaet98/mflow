@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"siper/config"
@@ -14,8 +14,7 @@ func init() {
 	var err error
 	err = config.ReadConfig()
 	if err != nil {
-		fmt.Println("Error: Revise la configuracion")
-		os.Exit(1) //Salgo con error porque no pude ni leer la config
+		log.Fatalln("Error Fatal: Revise la configuracion")
 	}
 }
 
@@ -23,13 +22,10 @@ func signalCatcher() {
 	sigChan := make(chan os.Signal)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	<-sigChan
-	salir()
+	log.Fatal("Signal de terminacion capturada, se sale")
 }
 
 //Salir : Se ejecuta cuando se sale del programa
-func salir() {
-	os.Exit(0)
-}
 
 func main() {
 	go signalCatcher()
@@ -38,11 +34,10 @@ func main() {
 	for len(pendingTasks) > 0 {
 		err = config.ReadConfig()
 		if err != nil {
-			fmt.Println("Error: Revise la configuracion")
-			os.Exit(1)
+			log.Fatalln("Error: Revise la configuracion")
 		}
 		tasks.RunTasks(pendingTasks, config.Config.Global.MaxProcessConcurrency)
 		time.Sleep(time.Second * time.Duration(config.Config.Global.CheckNewConfigInterval))
 	}
-	fmt.Println("All tasks finished")
+	log.Println("All tasks finished")
 }

@@ -1,9 +1,9 @@
 package config
 
 import (
-	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -58,17 +58,14 @@ func getConfigs(path string) error {
 }
 
 // ReadConfig : Lee el archivo de configuracion.
-func ReadConfig() error {
-	var err error
+func ReadConfig() (err error) {
 	err = getConfigs("config.yaml")
 	if err != nil {
-		fmt.Printf("%v", err)
-		return err
+		log.Panicln(err)
 	}
 	err = getConfigs("oracle.yaml")
 	if err != nil {
-		fmt.Printf("%v", err)
-		return err
+		log.Panicln(err)
 	}
-	return err
+	return
 }

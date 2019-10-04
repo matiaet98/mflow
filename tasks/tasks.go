@@ -2,8 +2,8 @@ package tasks
 
 import (
 	"database/sql"
-	"fmt"
 	_ "gopkg.in/goracle.v2" //se abstrae su uso con la libreria sql
+	"log"
 	"siper/config"
 	"siper/processes"
 	"time"
@@ -32,12 +32,11 @@ func runTask(task config.Task, sem chan bool) {
 	setTaskStatus(task.ID, runningStatus)
 	output, err = ps.Run()
 	if err != nil {
-		fmt.Println(err)
 		setTaskStatus(task.ID, failedStatus)
-		return
+		log.Panicln(err)
 	}
 	setTaskStatus(task.ID, successStatus)
-	fmt.Println(output)
+	log.Println(output)
 }
 
 //GetPendingTasks : Obtiene las tareas pendientes
@@ -46,7 +45,7 @@ func GetPendingTasks(AllTasks []config.Task) []config.Task {
 	for _, task := range AllTasks {
 		status, _, err := getTaskStatus(task.ID)
 		if err != nil {
-			fmt.Println(err) //no la agrego si hay error
+			log.Println(err) //no la agrego si hay error
 			continue
 		}
 		if status == noneStatus {
@@ -71,14 +70,12 @@ func RunTasks(Tasks []config.Task, maxParallel int) {
 func getTaskStatus(ID int) (string, time.Time, error) {
 	db, err := sql.Open("goracle", config.Config.EtlUser+"/"+config.Config.EtlPassword+"@"+config.Config.FiscoConnectionString)
 	if err != nil {
-		fmt.Println(err)
-		return "", time.Now(), err
+		log.Panicln(err)
 	}
 	defer db.Close()
 	tx, err := db.Begin()
 	if err != nil {
-		fmt.Println(err)
-		return "", time.Now(), err
+		log.Panicln(err)
 	}
 	var status string
 	var fecha time.Time
@@ -91,13 +88,11 @@ func getTaskStatus(ID int) (string, time.Time, error) {
 	`
 	_, err = tx.Exec(command, sql.Named("task_id", ID), sql.Named("status", sql.Out{Dest: &status}), sql.Named("fecha", sql.Out{Dest: &fecha}))
 	if err != nil {
-		fmt.Println(err)
-		return "", time.Now(), err
+		log.Panicln(err)
 	}
 	err = tx.Commit()
 	if err != nil {
-		fmt.Println(err)
-		return "", time.Now(), err
+		log.Panicln(err)
 	}
 	return status, fecha, nil
 }
@@ -105,14 +100,13 @@ func getTaskStatus(ID int) (string, time.Time, error) {
 func setTaskStatus(ID int, status string) (string, error) {
 	db, err := sql.Open("goracle", config.Config.EtlUser+"/"+config.Config.EtlPassword+"@"+config.Config.FiscoConnectionString)
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		log.Panicln(err)
 	}
 	defer db.Close()
 	tx, err := db.Begin()
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		log.Panicln(err)
+
 	}
 	var command string
 	if status == runningStatus {
@@ -131,13 +125,12 @@ func setTaskStatus(ID int, status string) (string, error) {
 		_, err = tx.Exec(command, sql.Named("task_id", ID), sql.Named("status", status))
 	}
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		log.Panicln(err)
+
 	}
 	err = tx.Commit()
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		log.Panicln(err)
 	}
 	return status, nil
 }
