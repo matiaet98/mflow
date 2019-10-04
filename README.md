@@ -1,26 +1,29 @@
-# mflow
+# Mflow
 
-## Configuraciones de entorno
+## Configuraciones
 
-### Archivo service.sh
+### Archivo config.json
 
-Se deben configurar los valores de las siguientes variables:
+Esta es la configuracion global de la aplicacion. Se puede customizar con las siguientes variables:
+- max_process_concurrency: Cantidad de procesos que pueden estar corriendo en simultaneo
+- check_new_config_interval: Cada cuantos segundos se revisa si los procesos ya terminaron para poder continuar con el DAG.
+- log_directory: En que directorio crear los logs de los procesos y el log maestro
 
-```bash
-#path absoluto hacia ejecutable de mflow, ej: /usr/local/mflow/mflow
-mflow="/usr/local/mflow/mflow"
-#path absoluto hacia el pid de mflow, ej: /usr/local/mflow/mflow.pid
-PIDFILE="/usr/local/mflow/mflow.pid"
-```
+### Archivo de tareas tasks.json
 
-### Archivo config.yaml
+En este archivo se define el grafo de procesos a ejecutar. Las variables son las siguientes para cada tarea:
+id: El identificador unico de la tarea dentro de su grupo. Es importantisimo que no haya duplicados
+name: Un nombre simbolico para la tarea. Sirve mas que nada para poder identificar el archivo de log
+type: El tipo de tareas que se pueden correr. Hasta ahora solo acepta de tipo bash y oracle, pero se puede extender facilmente.
+depends: Es un array con los ID de las tareas de las cuales depende esta tarea. Si las mismas no fueron completadas con SUCCESS, la misma no puede iniciar.
+command: El comando que se desea ejecutar. Esta ligado al tipo de proceso.
+Db: Identificador de la conexion en el cual se corre el proceso (para procesos oracle)
 
-Este es el fichero maestro de la aplicacion, cada parametro tiene comentario sobre su significado.
-Puede ser modificado mientras el proceso corre y el mismo tomara los cambios automaticamente.
+### Archivo oracle.json
 
-_Warning: El unico parametro que **NO** se debe modificar es el ID de cada proceso_
+Este archivo es autodescriptivo, contiene la informacion de los distintos datasources para oracle, identificados por un nombre.
 
-### Oracle
+### Configuracion especial para Oracle
 
 - Se debe tener instalado OracleClient full, Oracle InstantClient u Oracle Database.
 - Una vez realizado, se deben tener sus librerias en la variable de entorno LD_LIBRARY_PATH, por lo cual, habria que agregar en el /etc/bashrc (en el caso de que el cliente este en /opt):
@@ -34,6 +37,5 @@ _Warning: El unico parametro que **NO** se debe modificar es el ID de cada proce
 ### TODO
 
 - [ ] separar config global de local de tareas
-- [ ] cambiar config a json
 - [ ] tomar archivo de tareas por parametro
-- [ ] log por separado de cada tarea
+- [ ] Crear plugin especifico para spark-submit que sepan interpretar la salida de cada comando. Un ejemplo de como hacerlo esta en el codigo de airflow para el hook de spark-submit.
