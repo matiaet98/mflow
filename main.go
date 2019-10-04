@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"siper/config"
-	"siper/global"
 	"siper/tasks"
 	"syscall"
 	"time"
@@ -18,7 +17,8 @@ func init() {
 	if err != nil {
 		log.Fatalln("Error Fatal: Revise la configuracion")
 	}
-	f, err := os.OpenFile(config.Config.LogDirectory+"siper-service.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	_ = os.Mkdir(config.Config.LogDirectory, os.ModePerm)
+	f, err := os.OpenFile(config.Config.LogDirectory+"siper-service.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
 	if err != nil {
 		log.Fatalf("error opening log file: %v", err)
 	}
@@ -39,12 +39,16 @@ func signalCatcher() {
 func main() {
 	go signalCatcher()
 	var err error
-	global.IDMaster = tasks.CreateMaster()
+	err = tasks.CreateMaster()
 	pendingTasks := tasks.GetPendingTasks(config.Config.Tasks)
+	if err != nil {
+		log.Fatalf("No puedo crear el master: " + err.Error())
+	}
 	for len(pendingTasks) > 0 {
 		tasks.RunTasks(pendingTasks, config.Config.Global.MaxProcessConcurrency)
 		time.Sleep(time.Second * time.Duration(config.Config.Global.CheckNewConfigInterval))
 		pendingTasks = tasks.GetPendingTasks(config.Config.Tasks)
 	}
+	tasks.EndMaster()
 	log.Println("All tasks finished")
 }

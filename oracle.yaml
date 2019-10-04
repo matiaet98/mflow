@@ -1,5 +1,5 @@
 oracle:
-  fisco_connection_string: "(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=127.0.0.1)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=ORCLPDB1.localdomain)))"
-  misg_connection_string: "(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=127.0.0.1)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=ORCLPDB1.localdomain)))"
-  etl_user: "FISCA_ETL"
-  etl_password: "FISCA_ETL"
+  fisco_connection_string: "(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=127.0.0.1)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=FISCO.matinet)))"
+  misg_connection_string: "(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=127.0.0.1)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=FISCO.matinet)))"
+  etl_user: "SIPER"
+  etl_password: "SIPER"

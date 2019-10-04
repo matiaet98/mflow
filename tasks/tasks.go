@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	_ "gopkg.in/goracle.v2" //se abstrae su uso con la libreria sql
 	"log"
+	"os"
 	"siper/config"
 	"siper/global"
 	"siper/processes"
+	"strconv"
 	"time"
 )
 
@@ -20,6 +22,12 @@ func runTask(task config.Task, sem chan bool) {
 	var output string
 	var err error
 	var ps processes.Process
+	f1, err := os.Create(config.Config.LogDirectory + "master_" + strconv.Itoa(global.IDMaster) + "_task_" + strconv.Itoa(task.ID) + ".log")
+	if err != nil {
+		panic(err)
+	}
+	defer f1.Close()
+	logger := log.New(f1, "", log.LstdFlags)
 	switch task.Type {
 	case "bash":
 		ps = processes.BashProcess{Command: task.Command}
@@ -30,8 +38,8 @@ func runTask(task config.Task, sem chan bool) {
 			ConnectionString: config.Config.FiscoConnectionString,
 			Command:          task.Command}
 	}
-	setTaskStatus(task.ID, runningStatus)
 	output, err = ps.Run()
+	logger.Println(output)
 	if err != nil {
 		setTaskStatus(task.ID, failedStatus)
 		log.Panicln(err)
@@ -76,6 +84,7 @@ func RunTasks(Tasks []config.Task, maxParallel int) {
 	for _, task := range Tasks {
 		if dependenciesSucceded(task) {
 			sem <- true
+			setTaskStatus(task.ID, runningStatus)
 			go runTask(task, sem)
 		}
 	}
@@ -85,7 +94,7 @@ func RunTasks(Tasks []config.Task, maxParallel int) {
 }
 
 //CreateMaster : Crea el master de tareas para esta corrida
-func CreateMaster() (ID int, err error) {
+func CreateMaster() (err error) {
 	db, err := sql.Open("goracle", config.Config.EtlUser+"/"+config.Config.EtlPassword+"@"+config.Config.FiscoConnectionString)
 	if err != nil {
 		log.Panicln(err)
@@ -98,10 +107,37 @@ func CreateMaster() (ID int, err error) {
 	const command string = `declare
 		l_id number;
 		begin
-		:l_id := siper.pkg_taskman.create_master;
+		siper.pkg_taskman.create_master(:l_id);
 		end;
 	`
-	_, err = tx.Exec(command, sql.Named("l_id", sql.Out{Dest: &ID}))
+	_, err = tx.Exec(command, sql.Named("l_id", sql.Out{Dest: &global.IDMaster}))
+	if err != nil {
+		log.Panicln(err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Panicln(err)
+	}
+	return
+}
+
+//EndMaster : Termina con el master de tareas para esta corrida
+func EndMaster() {
+	db, err := sql.Open("goracle", config.Config.EtlUser+"/"+config.Config.EtlPassword+"@"+config.Config.FiscoConnectionString)
+	if err != nil {
+		log.Panicln(err)
+	}
+	defer db.Close()
+	tx, err := db.Begin()
+	if err != nil {
+		log.Panicln(err)
+	}
+	const command string = `
+		begin
+		siper.pkg_taskman.end_master(:id_master);
+		end;
+	`
+	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster))
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -151,7 +187,6 @@ func setTaskStatus(IDTask int, status string) (string, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		log.Panicln(err)
-
 	}
 	var command string
 	if status == runningStatus {
