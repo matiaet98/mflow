@@ -33,4 +33,7 @@ _Warning: El unico parametro que **NO** se debe modificar es el ID de cada proce
 
 ### TODO
 
-- [ ] Toda la implementacion de Loggging
+- [ ] Manejar precedencias
+- [ ] separar config global de local de tareas
+- [ ] cambiar config a json
+- [ ] tomar archivo de tareas por parametro

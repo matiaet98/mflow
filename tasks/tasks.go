@@ -5,6 +5,7 @@ import (
 	_ "gopkg.in/goracle.v2" //se abstrae su uso con la libreria sql
 	"log"
 	"siper/config"
+	"siper/global"
 	"siper/processes"
 	"time"
 )
@@ -67,7 +68,35 @@ func RunTasks(Tasks []config.Task, maxParallel int) {
 	}
 }
 
-func getTaskStatus(ID int) (string, time.Time, error) {
+//CreateMaster : Crea el master de tareas para esta corrida
+func CreateMaster() (ID int, err error) {
+	db, err := sql.Open("goracle", config.Config.EtlUser+"/"+config.Config.EtlPassword+"@"+config.Config.FiscoConnectionString)
+	if err != nil {
+		log.Panicln(err)
+	}
+	defer db.Close()
+	tx, err := db.Begin()
+	if err != nil {
+		log.Panicln(err)
+	}
+	const command string = `declare
+		l_id number;
+		begin
+		:l_id := siper.pkg_taskman.create_master;
+		end;
+	`
+	_, err = tx.Exec(command, sql.Named("l_id", sql.Out{Dest: &ID}))
+	if err != nil {
+		log.Panicln(err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Panicln(err)
+	}
+	return
+}
+
+func getTaskStatus(IDTask int) (string, time.Time, error) {
 	db, err := sql.Open("goracle", config.Config.EtlUser+"/"+config.Config.EtlPassword+"@"+config.Config.FiscoConnectionString)
 	if err != nil {
 		log.Panicln(err)
@@ -80,13 +109,13 @@ func getTaskStatus(ID int) (string, time.Time, error) {
 	var status string
 	var fecha time.Time
 	const command string = `declare
-		status varchar2(4000);
+		status varchar2(20);
 		fecha date;
 		begin
-		siper.pkg_taskman.get_status(:task_id,:status,:fecha);
+		siper.pkg_taskman.get_status(:id_master,:id_task,:status,:fecha);
 		end;
 	`
-	_, err = tx.Exec(command, sql.Named("task_id", ID), sql.Named("status", sql.Out{Dest: &status}), sql.Named("fecha", sql.Out{Dest: &fecha}))
+	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask), sql.Named("status", sql.Out{Dest: &status}), sql.Named("fecha", sql.Out{Dest: &fecha}))
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -97,7 +126,7 @@ func getTaskStatus(ID int) (string, time.Time, error) {
 	return status, fecha, nil
 }
 
-func setTaskStatus(ID int, status string) (string, error) {
+func setTaskStatus(IDTask int, status string) (string, error) {
 	db, err := sql.Open("goracle", config.Config.EtlUser+"/"+config.Config.EtlPassword+"@"+config.Config.FiscoConnectionString)
 	if err != nil {
 		log.Panicln(err)
@@ -112,17 +141,17 @@ func setTaskStatus(ID int, status string) (string, error) {
 	if status == runningStatus {
 		command = `
 		begin
-		siper.pkg_taskman.start_task(:task_id);
+		siper.pkg_taskman.start_task(:id_master, :id_task);
 		end;
 		`
-		_, err = tx.Exec(command, sql.Named("task_id", ID))
+		_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask))
 	} else {
 		command = `
 		begin
-		siper.pkg_taskman.update_task(:task_id,:status);
+		siper.pkg_taskman.update_task(:id_master, :id_task,:status);
 		end;
 		`
-		_, err = tx.Exec(command, sql.Named("task_id", ID), sql.Named("status", status))
+		_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask), sql.Named("status", status))
 	}
 	if err != nil {
 		log.Panicln(err)

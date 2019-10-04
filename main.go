@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"siper/config"
+	"siper/global"
 	"siper/tasks"
 	"syscall"
 	"time"
@@ -38,12 +39,9 @@ func signalCatcher() {
 func main() {
 	go signalCatcher()
 	var err error
+	global.IDMaster = tasks.CreateMaster()
 	pendingTasks := tasks.GetPendingTasks(config.Config.Tasks)
 	for len(pendingTasks) > 0 {
-		err = config.ReadConfig()
-		if err != nil {
-			log.Fatalln("Error: Revise la configuracion")
-		}
 		tasks.RunTasks(pendingTasks, config.Config.Global.MaxProcessConcurrency)
 		time.Sleep(time.Second * time.Duration(config.Config.Global.CheckNewConfigInterval))
 		pendingTasks = tasks.GetPendingTasks(config.Config.Tasks)
