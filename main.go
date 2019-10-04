@@ -34,14 +34,15 @@ func salir() {
 func main() {
 	go signalCatcher()
 	var err error
-	for {
+	pendingTasks := tasks.GetPendingTasks(config.Config.Tasks)
+	for len(pendingTasks) > 0 {
 		err = config.ReadConfig()
 		if err != nil {
 			fmt.Println("Error: Revise la configuracion")
 			os.Exit(1)
 		}
-		TasksOfTheDay := tasks.GetTasksOfTheDay(config.Config.Tasks)
-		tasks.RunTasks(TasksOfTheDay, config.Config.Global.MaxProcessConcurrency)
+		tasks.RunTasks(pendingTasks, config.Config.Global.MaxProcessConcurrency)
 		time.Sleep(time.Second * time.Duration(config.Config.Global.CheckNewConfigInterval))
 	}
+	fmt.Println("All tasks finished")
 }

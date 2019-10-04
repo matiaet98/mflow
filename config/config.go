@@ -38,7 +38,7 @@ type Task struct {
 	ID      int    `yaml:"id"`
 	Type    string `yaml:"type"`
 	Command string `yaml:"command"`
-	Day     int    `yaml:"day"`
+	Depends []int  `yaml:"depends"`
 }
 
 func getConfigs(path string) error {

@@ -14,23 +14,6 @@ const noneStatus string = "NONE"
 const failedStatus string = "FAILED"
 const successStatus string = "SUCCESS"
 
-func getDay() int {
-	return time.Now().Day()
-}
-
-// GetTasksOfTheDay : Devuelve un slice con las tareas del dia
-func GetTasksOfTheDay(AllTasks []config.Task) []config.Task {
-	today := getDay()
-	var tasks []config.Task
-
-	for _, task := range AllTasks {
-		if task.Day == today {
-			tasks = append(tasks, task)
-		}
-	}
-	return tasks
-}
-
 func runTask(task config.Task, sem chan bool) {
 	defer func() { <-sem }()
 	var output string
@@ -57,31 +40,26 @@ func runTask(task config.Task, sem chan bool) {
 	fmt.Println(output)
 }
 
-//RunTasks : Corre todas las tareas del slice que recibe
-func RunTasks(AllTasks []config.Task, maxParallel int) {
+//GetPendingTasks : Obtiene las tareas pendientes
+func GetPendingTasks(AllTasks []config.Task) []config.Task {
 	var PendingTasks []config.Task
 	for _, task := range AllTasks {
-		status, fecha, err := getTaskStatus(task.ID)
+		status, _, err := getTaskStatus(task.ID)
 		if err != nil {
 			fmt.Println(err) //no la agrego si hay error
 			continue
 		}
-		if status == runningStatus {
-			continue
-		}
 		if status == noneStatus {
 			PendingTasks = append(PendingTasks, task)
-			continue
-		}
-		year, month, day := time.Now().Date()
-		if int(fecha.Sub(time.Date(year, month, day, 0, 0, 0, 0, time.UTC))) < 0 { //si es anterior a hoy
-			PendingTasks = append(PendingTasks, task)
-			continue
 		}
 	}
+	return PendingTasks
+}
 
+//RunTasks : Corre todas las tareas del slice que recibe
+func RunTasks(Tasks []config.Task, maxParallel int) {
 	sem := make(chan bool, maxParallel)
-	for _, task := range PendingTasks {
+	for _, task := range Tasks {
 		sem <- true
 		go runTask(task, sem)
 	}
