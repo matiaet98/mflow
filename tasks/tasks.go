@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	_ "gopkg.in/goracle.v2" //se abstrae su uso con la libreria sql
 	"log"
+	"mflow/config"
+	"mflow/global"
+	"mflow/processes"
 	"os"
-	"siper/config"
-	"siper/global"
-	"siper/processes"
 	"strconv"
 	"time"
 )
@@ -18,26 +18,55 @@ const failedStatus string = "FAILED"
 const successStatus string = "SUCCESS"
 
 func runTask(task config.Task, sem chan bool) {
+	switch task.Type {
+	case "bash":
+		runBash(task, sem)
+		break
+	case "oracle":
+		runOracle(task, sem)
+		break
+	}
+}
+
+func runBash(task config.Task, sem chan bool) {
 	defer func() { <-sem }()
 	var output string
 	var err error
 	var ps processes.Process
-	f1, err := os.Create(config.Config.LogDirectory + "master_" + strconv.Itoa(global.IDMaster) + "_task_" + strconv.Itoa(task.ID) + ".log")
+	f1, err := os.Create(config.Config.LogDirectory + "master_" + strconv.Itoa(global.IDMaster) + "_task_" + task.Name + ".log")
 	if err != nil {
 		panic(err)
 	}
 	defer f1.Close()
 	logger := log.New(f1, "", log.LstdFlags)
-	switch task.Type {
-	case "bash":
-		ps = processes.BashProcess{Command: task.Command}
-	case "oracle":
-		ps = processes.OracleProcess{
-			User:             config.Config.EtlUser,
-			Password:         config.Config.EtlPassword,
-			ConnectionString: config.Config.FiscoConnectionString,
-			Command:          task.Command}
+	ps = processes.BashProcess{Command: task.Command}
+	output, err = ps.Run()
+	logger.Println(output)
+	if err != nil {
+		setTaskStatus(task.ID, failedStatus)
+		log.Panicln(err)
 	}
+	setTaskStatus(task.ID, successStatus)
+	log.Println(output)
+}
+
+func runOracle(task config.Task, sem chan bool) {
+	defer func() { <-sem }()
+	var output string
+	var err error
+	var ps processes.Process
+	f1, err := os.Create(config.Config.LogDirectory + "master_" + strconv.Itoa(global.IDMaster) + "_task_" + task.Name + ".log")
+	if err != nil {
+		panic(err)
+	}
+	defer f1.Close()
+	logger := log.New(f1, "", log.LstdFlags)
+	conn := getConnection(task.Db)
+	ps = processes.OracleProcess{
+		User:             conn.User,
+		Password:         conn.Password,
+		ConnectionString: conn.ConnectionString,
+		Command:          task.Command}
 	output, err = ps.Run()
 	logger.Println(output)
 	if err != nil {
@@ -93,9 +122,22 @@ func RunTasks(Tasks []config.Task, maxParallel int) {
 	}
 }
 
+func getConnection(name string) config.OracleConn {
+	var conn config.OracleConn
+	for _, x := range config.Ora.Connections {
+		if x.Name == name {
+			conn = x
+			break
+		}
+	}
+	return conn
+}
+
 //CreateMaster : Crea el master de tareas para esta corrida
 func CreateMaster() (err error) {
-	db, err := sql.Open("goracle", config.Config.EtlUser+"/"+config.Config.EtlPassword+"@"+config.Config.FiscoConnectionString)
+	fisco := getConnection("fisco")
+
+	db, err := sql.Open("goracle", fisco.User+"/"+fisco.Password+"@"+fisco.ConnectionString)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -107,7 +149,7 @@ func CreateMaster() (err error) {
 	const command string = `declare
 		l_id number;
 		begin
-		siper.pkg_taskman.create_master(:l_id);
+		mflow.pkg_taskman.create_master(:l_id);
 		end;
 	`
 	_, err = tx.Exec(command, sql.Named("l_id", sql.Out{Dest: &global.IDMaster}))
@@ -123,7 +165,8 @@ func CreateMaster() (err error) {
 
 //EndMaster : Termina con el master de tareas para esta corrida
 func EndMaster() {
-	db, err := sql.Open("goracle", config.Config.EtlUser+"/"+config.Config.EtlPassword+"@"+config.Config.FiscoConnectionString)
+	fisco := getConnection("fisco")
+	db, err := sql.Open("goracle", fisco.User+"/"+fisco.Password+"@"+fisco.ConnectionString)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -134,7 +177,7 @@ func EndMaster() {
 	}
 	const command string = `
 		begin
-		siper.pkg_taskman.end_master(:id_master);
+		mflow.pkg_taskman.end_master(:id_master);
 		end;
 	`
 	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster))
@@ -149,7 +192,8 @@ func EndMaster() {
 }
 
 func getTaskStatus(IDTask int) (string, time.Time, error) {
-	db, err := sql.Open("goracle", config.Config.EtlUser+"/"+config.Config.EtlPassword+"@"+config.Config.FiscoConnectionString)
+	fisco := getConnection("fisco")
+	db, err := sql.Open("goracle", fisco.User+"/"+fisco.Password+"@"+fisco.ConnectionString)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -164,7 +208,7 @@ func getTaskStatus(IDTask int) (string, time.Time, error) {
 		status varchar2(20);
 		fecha date;
 		begin
-		siper.pkg_taskman.get_status(:id_master,:id_task,:status,:fecha);
+		mflow.pkg_taskman.get_status(:id_master,:id_task,:status,:fecha);
 		end;
 	`
 	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask), sql.Named("status", sql.Out{Dest: &status}), sql.Named("fecha", sql.Out{Dest: &fecha}))
@@ -179,7 +223,8 @@ func getTaskStatus(IDTask int) (string, time.Time, error) {
 }
 
 func setTaskStatus(IDTask int, status string) (string, error) {
-	db, err := sql.Open("goracle", config.Config.EtlUser+"/"+config.Config.EtlPassword+"@"+config.Config.FiscoConnectionString)
+	fisco := getConnection("fisco")
+	db, err := sql.Open("goracle", fisco.User+"/"+fisco.Password+"@"+fisco.ConnectionString)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -192,14 +237,14 @@ func setTaskStatus(IDTask int, status string) (string, error) {
 	if status == runningStatus {
 		command = `
 		begin
-		siper.pkg_taskman.start_task(:id_master, :id_task);
+		mflow.pkg_taskman.start_task(:id_master, :id_task);
 		end;
 		`
 		_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask))
 	} else {
 		command = `
 		begin
-		siper.pkg_taskman.update_task(:id_master, :id_task,:status);
+		mflow.pkg_taskman.update_task(:id_master, :id_task,:status);
 		end;
 		`
 		_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask), sql.Named("status", status))

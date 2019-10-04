@@ -1,7 +1,7 @@
 package config
 
 import (
-	"gopkg.in/yaml.v2"
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"os"
@@ -9,48 +9,53 @@ import (
 )
 
 //Config : Global donde se guarda la configuracion
-var Config Conf
+var Config Global
 
-// Conf : struct de configuracion.
-type Conf struct {
-	Global `yaml:"global"`
-	Oracle `yaml:"oracle"`
-	Tasks  []Task `yaml:"tasks"`
-}
+//Ora : Global donde se guarda la configuracion de oracle
+var Ora Oracle
 
-// Global : Estructura de bloque global
+// Global : struct de configuracion.
 type Global struct {
-	MaxProcessConcurrency  int    `yaml:"max_process_concurrency"`
-	CheckNewConfigInterval int    `yaml:"check_new_config_interval"`
-	LogDirectory           string `yaml:"log_directory"`
+	MaxProcessConcurrency  int    `json:"max_process_concurrency"`
+	CheckNewConfigInterval int    `json:"check_new_config_interval"`
+	LogDirectory           string `json:"log_directory"`
+	Tasks                  []Task `json:"tasks"`
 }
 
 // Oracle : Estructura de bloque oracle
 type Oracle struct {
-	EtlUser               string `yaml:"etl_user"`
-	EtlPassword           string `yaml:"etl_password"`
-	FiscoConnectionString string `yaml:"fisco_connection_string"`
-	MisgConnectionString  string `yaml:"misg_connection_string"`
+	Connections []OracleConn `json:"connections"`
+}
+
+// OracleConn : Estructura de bloque oracle
+type OracleConn struct {
+	Name             string `json:"name"`
+	ConnectionString string `json:"connection_string"`
+	User             string `json:"user"`
+	Password         string `json:"password"`
 }
 
 //Task : Estructura de una tarea
 type Task struct {
-	ID      int    `yaml:"id"`
-	Type    string `yaml:"type"`
-	Command string `yaml:"command"`
-	Depends []int  `yaml:"depends"`
+	ID      int    `json:"id"`
+	Type    string `json:"type"`
+	Name    string `json:"name"`
+	Command string `json:"command"`
+	Db      string `json:"db,omitempty"`
+	Schema  string `json:"schema,omitempty"`
+	Depends []int  `json:"depends,omitempty"`
 }
 
-func getConfigs(path string) error {
+func getConfigs(path string, conf interface{}) error {
 	dir, _ := filepath.Abs(filepath.Dir(os.Args[0])) //obtengo el path del ejecutable
-	yamlFile, err := ioutil.ReadFile(dir + "/" + path)
+	jfile, err := ioutil.ReadFile(dir + "/" + path)
 	if err != nil {
-		yamlFile, err = ioutil.ReadFile("./" + path) //antes de salir con error pruebo en el directorio actual
+		jfile, err = ioutil.ReadFile("./" + path) //antes de salir con error pruebo en el directorio actual
 		if err != nil {
 			return err
 		}
 	}
-	err = yaml.Unmarshal(yamlFile, &Config)
+	err = json.Unmarshal(jfile, &conf)
 	if err != nil {
 		return err
 	}
@@ -59,11 +64,11 @@ func getConfigs(path string) error {
 
 // ReadConfig : Lee el archivo de configuracion.
 func ReadConfig() (err error) {
-	err = getConfigs("config.yaml")
+	err = getConfigs("config.json", &Config)
 	if err != nil {
 		log.Panicln(err)
 	}
-	err = getConfigs("oracle.yaml")
+	err = getConfigs("oracle.json", &Ora)
 	if err != nil {
 		log.Panicln(err)
 	}

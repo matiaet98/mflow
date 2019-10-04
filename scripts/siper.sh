@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#path absoluto hacia ejecutable de siper, ej: /usr/local/siper/siper
-SIPER="/home/matiaet98/go/src/siper/siper"
-#path absoluto hacia el pid de siper, ej: /usr/local/siper/siper.pid
-PIDFILE="/home/matiaet98/go/src/siper/siper.pid"
+#path absoluto hacia ejecutable de mflow, ej: /usr/local/mflow/mflow
+mflow="/home/matiaet98/go/src/mflow/mflow"
+#path absoluto hacia el pid de mflow, ej: /usr/local/mflow/mflow.pid
+PIDFILE="/home/matiaet98/go/src/mflow/mflow.pid"
 
 if [[ $USER != "matiaet98" ]]; then
     echo "Se debe correr con el usuario hadoop"
@@ -16,7 +16,7 @@ start(){
         return 1
     fi
     echo 'Iniciando servicio…' >&2
-    $SIPER &>/dev/null & echo $! > $PIDFILE
+    $mflow &>/dev/null & echo $! > $PIDFILE
     echo 'Servicio iniciado' >&2
     if [[ ! -f $PIDFILE ]]; then
         echo "El proceso no inicio correctamente, revise logs"

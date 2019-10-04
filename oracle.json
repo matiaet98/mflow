@@ -1,0 +1,10 @@
+{
+    "connections":[
+        {
+            "name": "fisco",
+            "connection_string": "(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=10.30.205.127)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=FISCO)))",
+            "user": "MFLOW",
+            "password": "MFLOW"
+        }
+    ]
+}

@@ -1,0 +1,54 @@
+{
+    "max_process_concurrency": 3,
+    "check_new_config_interval": 1,
+    "log_directory": "./logs/",
+    "tasks": [
+        {
+            "id": 1,
+            "name": "tarea1",
+            "type": "bash",
+            "command": "/home/mestevez/tmp/tarea1.sh"
+        },
+        {
+            "id": 2,
+            "name": "tarea2",
+            "type": "bash",
+            "command": "/home/mestevez/tmp/tarea2.sh",
+            "depends": [1]
+        },
+        {
+            "id": 3,
+            "name": "tarea3",
+            "type": "bash",
+            "command": "/home/mestevez/tmp/tarea3.sh",
+            "depends": [1]
+        },
+        {
+            "id": 4,
+            "name": "tarea4",
+            "type": "bash",
+            "command": "/home/mestevez/tmp/tarea4.sh",
+            "depends": [3,2]
+        },
+        {
+            "id": 5,
+            "name": "tarea5",
+            "type": "bash",
+            "command": "/home/mestevez/tmp/tarea5.sh",
+            "depends": [2]
+        },
+        {
+            "id": 6,
+            "name": "tarea6",
+            "type": "bash",
+            "command": "/home/mestevez/tmp/tarea6.sh",
+            "depends": [1,3]
+        },
+        {
+            "id": 7,
+            "name": "tarea7",
+            "type": "bash",
+            "command": "/home/mestevez/tmp/tarea7.sh"
+        }
+    ]
+}

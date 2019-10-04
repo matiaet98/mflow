@@ -1,4 +1,4 @@
-# SIPER
+# mflow
 
 ## Configuraciones de entorno
 
@@ -7,10 +7,10 @@
 Se deben configurar los valores de las siguientes variables:
 
 ```bash
-#path absoluto hacia ejecutable de siper, ej: /usr/local/siper/siper
-SIPER="/usr/local/siper/siper"
-#path absoluto hacia el pid de siper, ej: /usr/local/siper/siper.pid
-PIDFILE="/usr/local/siper/siper.pid"
+#path absoluto hacia ejecutable de mflow, ej: /usr/local/mflow/mflow
+mflow="/usr/local/mflow/mflow"
+#path absoluto hacia el pid de mflow, ej: /usr/local/mflow/mflow.pid
+PIDFILE="/usr/local/mflow/mflow.pid"
 ```
 
 ### Archivo config.yaml

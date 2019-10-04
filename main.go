@@ -3,10 +3,10 @@ package main
 import (
 	"io"
 	"log"
+	"mflow/config"
+	"mflow/tasks"
 	"os"
 	"os/signal"
-	"siper/config"
-	"siper/tasks"
 	"syscall"
 	"time"
 )
@@ -18,7 +18,7 @@ func init() {
 		log.Fatalln("Error Fatal: Revise la configuracion")
 	}
 	_ = os.Mkdir(config.Config.LogDirectory, os.ModePerm)
-	f, err := os.OpenFile(config.Config.LogDirectory+"siper-service.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
+	f, err := os.OpenFile(config.Config.LogDirectory+"mflow.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
 	if err != nil {
 		log.Fatalf("error opening log file: %v", err)
 	}
@@ -45,8 +45,8 @@ func main() {
 		log.Fatalf("No puedo crear el master: " + err.Error())
 	}
 	for len(pendingTasks) > 0 {
-		tasks.RunTasks(pendingTasks, config.Config.Global.MaxProcessConcurrency)
-		time.Sleep(time.Second * time.Duration(config.Config.Global.CheckNewConfigInterval))
+		tasks.RunTasks(pendingTasks, config.Config.MaxProcessConcurrency)
+		time.Sleep(time.Second * time.Duration(config.Config.CheckNewConfigInterval))
 		pendingTasks = tasks.GetPendingTasks(config.Config.Tasks)
 	}
 	tasks.EndMaster()
