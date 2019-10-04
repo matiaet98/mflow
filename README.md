@@ -37,3 +37,4 @@ _Warning: El unico parametro que **NO** se debe modificar es el ID de cada proce
 - [ ] separar config global de local de tareas
 - [ ] cambiar config a json
 - [ ] tomar archivo de tareas por parametro
+- [ ] log por separado de cada tarea

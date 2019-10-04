@@ -56,12 +56,28 @@ func GetPendingTasks(AllTasks []config.Task) []config.Task {
 	return PendingTasks
 }
 
+func dependenciesSucceded(task config.Task) bool {
+	for _, dep := range task.Depends {
+		status, _, err := getTaskStatus(dep)
+		if err != nil {
+			log.Println(err) //no la dejo correr si hay error
+			return false
+		}
+		if status != successStatus {
+			return false
+		}
+	}
+	return true
+}
+
 //RunTasks : Corre todas las tareas del slice que recibe
 func RunTasks(Tasks []config.Task, maxParallel int) {
 	sem := make(chan bool, maxParallel)
 	for _, task := range Tasks {
-		sem <- true
-		go runTask(task, sem)
+		if dependenciesSucceded(task) {
+			sem <- true
+			go runTask(task, sem)
+		}
 	}
 	for i := 0; i < cap(sem); i++ {
 		sem <- true
