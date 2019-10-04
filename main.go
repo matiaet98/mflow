@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -16,6 +17,13 @@ func init() {
 	if err != nil {
 		log.Fatalln("Error Fatal: Revise la configuracion")
 	}
+	f, err := os.OpenFile(config.Config.LogDirectory+"siper-service.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening log file: %v", err)
+	}
+	mw := io.MultiWriter(os.Stdout, f)
+	log.SetOutput(mw)
+	log.Println("Initializing log")
 }
 
 func signalCatcher() {

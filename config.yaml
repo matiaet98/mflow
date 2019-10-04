@@ -1,7 +1,7 @@
 global:
   max_process_concurrency: 3 # 1 - 65535: Cuantos procesos en simultaneo se pueden correr
   check_new_config_interval: 10 # 1 - 999999999 Cada cuantos segundos se vuelve a chequear la configuracion
-  log_directory: "logs"
+  log_directory: "./logs"
 tasks: #importante nunca cambiar el ID de una tarea, sino se pierde su historia (o se mezcla con la de otro)
   - id: 1
     type: "oracle"
