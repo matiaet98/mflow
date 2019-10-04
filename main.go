@@ -46,6 +46,7 @@ func main() {
 		}
 		tasks.RunTasks(pendingTasks, config.Config.Global.MaxProcessConcurrency)
 		time.Sleep(time.Second * time.Duration(config.Config.Global.CheckNewConfigInterval))
+		pendingTasks = tasks.GetPendingTasks(config.Config.Tasks)
 	}
 	log.Println("All tasks finished")
 }
