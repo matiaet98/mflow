@@ -2,8 +2,8 @@ package processes
 
 import (
 	"database/sql"
+	log "github.com/sirupsen/logrus"
 	_ "gopkg.in/goracle.v2" //se abstrae su uso con la libreria sql
-	"log"
 	"os/exec"
 )
 

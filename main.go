@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
+	log "github.com/sirupsen/logrus"
 	"io"
-	"log"
 	"mflow/config"
 	"mflow/global"
 	"mflow/tasks"
@@ -17,6 +17,13 @@ func init() {
 	var err error
 	flag.StringVar(&global.TaskFile, "taskfile", "./tasks.json", "Archivo json con el DAG de tareas a correr")
 	flag.Parse()
+	log.SetLevel(log.InfoLevel)
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp:          true,
+		ForceColors:            true,
+		DisableLevelTruncation: true,
+		TimestampFormat:        "2006-01-02 15:04:05",
+	})
 	err = config.ReadConfig()
 	if err != nil {
 		log.Fatalln("Error Fatal: Revise la configuracion")
@@ -26,9 +33,10 @@ func init() {
 	if err != nil {
 		log.Fatalf("error opening log file: %v", err)
 	}
+
 	mw := io.MultiWriter(os.Stdout, f)
 	log.SetOutput(mw)
-	log.Println("Initializing log")
+	log.Infoln("Initializing log")
 }
 
 func signalCatcher() {
@@ -54,5 +62,5 @@ func main() {
 		pendingTasks = tasks.GetPendingTasks(config.Config.Tasks.Tasks)
 	}
 	tasks.EndMaster()
-	log.Println("All tasks finished")
+	log.Infoln("All tasks finished")
 }

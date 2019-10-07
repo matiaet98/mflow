@@ -2,8 +2,8 @@ package config
 
 import (
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"mflow/global"
 	"os"
 	"path/filepath"

@@ -2,8 +2,8 @@ package tasks
 
 import (
 	"database/sql"
+	log "github.com/sirupsen/logrus"
 	_ "gopkg.in/goracle.v2" //se abstrae su uso con la libreria sql
-	"log"
 	"mflow/config"
 	"mflow/global"
 	"mflow/processes"
@@ -38,7 +38,14 @@ func runBash(task config.Task, sem chan bool) {
 		panic(err)
 	}
 	defer f1.Close()
-	logger := log.New(f1, "", log.LstdFlags)
+	logger := log.New()
+	logger.SetFormatter(&log.TextFormatter{
+		FullTimestamp:          true,
+		ForceColors:            true,
+		DisableLevelTruncation: true,
+		TimestampFormat:        "2006-01-02 15:04:05",
+	})
+	logger.Out = f1
 	ps = processes.BashProcess{Command: task.Command}
 	output, err = ps.Run()
 	logger.Println(output)
@@ -47,7 +54,7 @@ func runBash(task config.Task, sem chan bool) {
 		log.Panicln(err)
 	}
 	setTaskStatus(task.ID, successStatus)
-	log.Println(output)
+	log.Infoln(output)
 }
 
 func runOracle(task config.Task, sem chan bool) {
@@ -60,7 +67,14 @@ func runOracle(task config.Task, sem chan bool) {
 		panic(err)
 	}
 	defer f1.Close()
-	logger := log.New(f1, "", log.LstdFlags)
+	logger := log.New()
+	logger.SetFormatter(&log.TextFormatter{
+		FullTimestamp:          true,
+		ForceColors:            true,
+		DisableLevelTruncation: true,
+		TimestampFormat:        "2006-01-02 15:04:05",
+	})
+	logger.Out = f1
 	conn := getConnection(task.Db)
 	ps = processes.OracleProcess{
 		User:             conn.User,
@@ -74,7 +88,7 @@ func runOracle(task config.Task, sem chan bool) {
 		log.Panicln(err)
 	}
 	setTaskStatus(task.ID, successStatus)
-	log.Println(output)
+	log.Infoln(output)
 }
 
 //GetPendingTasks : Obtiene las tareas pendientes
@@ -83,7 +97,7 @@ func GetPendingTasks(AllTasks []config.Task) []config.Task {
 	for _, task := range AllTasks {
 		status, _, err := getTaskStatus(task.ID)
 		if err != nil {
-			log.Println(err) //no la agrego si hay error
+			log.Infoln(err) //no la agrego si hay error
 			continue
 		}
 		if status == noneStatus {
@@ -97,7 +111,7 @@ func dependenciesSucceded(task config.Task) bool {
 	for _, dep := range task.Depends {
 		status, _, err := getTaskStatus(dep)
 		if err != nil {
-			log.Println(err) //no la dejo correr si hay error
+			log.Infoln(err) //no la dejo correr si hay error
 			return false
 		}
 		if status != successStatus {
@@ -139,12 +153,12 @@ func CreateMaster() (err error) {
 
 	db, err := sql.Open("goracle", fisco.User+"/"+fisco.Password+"@"+fisco.ConnectionString)
 	if err != nil {
-		log.Panicln(err)
+		log.Fatalln(err)
 	}
 	defer db.Close()
 	tx, err := db.Begin()
 	if err != nil {
-		log.Panicln(err)
+		log.Fatalln(err)
 	}
 	const command string = `declare
 		l_id number;
@@ -154,11 +168,11 @@ func CreateMaster() (err error) {
 	`
 	_, err = tx.Exec(command, sql.Named("l_id", sql.Out{Dest: &global.IDMaster}))
 	if err != nil {
-		log.Panicln(err)
+		log.Fatalln(err)
 	}
 	err = tx.Commit()
 	if err != nil {
-		log.Panicln(err)
+		log.Fatalln(err)
 	}
 	return
 }
@@ -195,12 +209,12 @@ func getTaskStatus(IDTask int) (string, time.Time, error) {
 	fisco := getConnection("fisco")
 	db, err := sql.Open("goracle", fisco.User+"/"+fisco.Password+"@"+fisco.ConnectionString)
 	if err != nil {
-		log.Panicln(err)
+		log.Fatalln(err)
 	}
 	defer db.Close()
 	tx, err := db.Begin()
 	if err != nil {
-		log.Panicln(err)
+		log.Fatalln(err)
 	}
 	var status string
 	var fecha time.Time
@@ -213,11 +227,11 @@ func getTaskStatus(IDTask int) (string, time.Time, error) {
 	`
 	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask), sql.Named("status", sql.Out{Dest: &status}), sql.Named("fecha", sql.Out{Dest: &fecha}))
 	if err != nil {
-		log.Panicln(err)
+		log.Fatalln(err)
 	}
 	err = tx.Commit()
 	if err != nil {
-		log.Panicln(err)
+		log.Fatalln(err)
 	}
 	return status, fecha, nil
 }
@@ -226,12 +240,12 @@ func setTaskStatus(IDTask int, status string) (string, error) {
 	fisco := getConnection("fisco")
 	db, err := sql.Open("goracle", fisco.User+"/"+fisco.Password+"@"+fisco.ConnectionString)
 	if err != nil {
-		log.Panicln(err)
+		log.Fatalln(err)
 	}
 	defer db.Close()
 	tx, err := db.Begin()
 	if err != nil {
-		log.Panicln(err)
+		log.Fatalln(err)
 	}
 	var command string
 	if status == runningStatus {
@@ -250,12 +264,12 @@ func setTaskStatus(IDTask int, status string) (string, error) {
 		_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask), sql.Named("status", status))
 	}
 	if err != nil {
-		log.Panicln(err)
+		log.Fatalln(err)
 
 	}
 	err = tx.Commit()
 	if err != nil {
-		log.Panicln(err)
+		log.Fatalln(err)
 	}
 	return status, nil
 }
