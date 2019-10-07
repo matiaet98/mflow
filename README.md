@@ -2,11 +2,6 @@
 
 Matiflow: Herramienta para generar DAGs de ejecucion de procesos. Inicialmente acepta procesos bash y oracle.
 
-
-<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
-
-<!-- code_chunk_output -->
-
 - [MFlow](#mflow)
   - [Configuraciones](#configuraciones)
     - [Archivo config.json](#archivo-configjson)
@@ -14,11 +9,9 @@ Matiflow: Herramienta para generar DAGs de ejecucion de procesos. Inicialmente a
     - [Archivo oracle.json](#archivo-oraclejson)
     - [Configuracion especial para Oracle](#configuracion-especial-para-oracle)
     - [Instalacion](#instalacion)
+    - [Log](#log)
     - [Ejemplos de corrida](#ejemplos-de-corrida)
     - [TODO](#todo)
-
-<!-- /code_chunk_output -->
-
 
 ## Configuraciones
 
