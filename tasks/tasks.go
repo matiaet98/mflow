@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"database/sql"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	_ "gopkg.in/goracle.v2" //se abstrae su uso con la libreria sql
 	"mflow/config"
@@ -49,12 +50,14 @@ func runBash(task config.Task, sem chan bool) {
 	ps = processes.BashProcess{Command: task.Command}
 	output, err = ps.Run()
 	logger.Println(output)
+	log.Infoln(output)
 	if err != nil {
 		setTaskStatus(task.ID, failedStatus)
-		log.Panicln(err)
+		log.Warnln(err)
+		return
 	}
 	setTaskStatus(task.ID, successStatus)
-	log.Infoln(output)
+	return
 }
 
 func runOracle(task config.Task, sem chan bool) {
@@ -83,12 +86,14 @@ func runOracle(task config.Task, sem chan bool) {
 		Command:          task.Command}
 	output, err = ps.Run()
 	logger.Println(output)
+	log.Infoln(output)
 	if err != nil {
 		setTaskStatus(task.ID, failedStatus)
-		log.Panicln(err)
+		log.Warnln(err)
+		return
 	}
 	setTaskStatus(task.ID, successStatus)
-	log.Infoln(output)
+	return
 }
 
 //GetPendingTasks : Obtiene las tareas pendientes
@@ -107,28 +112,36 @@ func GetPendingTasks(AllTasks []config.Task) []config.Task {
 	return PendingTasks
 }
 
-func dependenciesSucceded(task config.Task) bool {
+func dependenciesStatus(task config.Task) string {
 	for _, dep := range task.Depends {
 		status, _, err := getTaskStatus(dep)
 		if err != nil {
-			log.Infoln(err) //no la dejo correr si hay error
-			return false
+			log.Warnln(err) //no la dejo correr si hay error
+			return failedStatus
 		}
-		if status != successStatus {
-			return false
+		if status == failedStatus {
+			return status
+		}
+		if status == noneStatus || status == runningStatus {
+			return status
+		}
+		if status == successStatus {
+			continue
 		}
 	}
-	return true
+	return successStatus
 }
 
 //RunTasks : Corre todas las tareas del slice que recibe
 func RunTasks(Tasks []config.Task, maxParallel int) {
 	sem := make(chan bool, maxParallel)
 	for _, task := range Tasks {
-		if dependenciesSucceded(task) {
+		if dependenciesStatus(task) == successStatus {
 			sem <- true
 			setTaskStatus(task.ID, runningStatus)
 			go runTask(task, sem)
+		} else if dependenciesStatus(task) == failedStatus {
+			setTaskStatus(task.ID, failedStatus)
 		}
 	}
 	for i := 0; i < cap(sem); i++ {
@@ -160,13 +173,33 @@ func CreateMaster() (err error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	const command string = `declare
+	var command string = `declare
 		l_id number;
 		begin
 		mflow.pkg_taskman.create_master(:l_id);
 		end;
 	`
 	_, err = tx.Exec(command, sql.Named("l_id", sql.Out{Dest: &global.IDMaster}))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	tx, err = db.Begin()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	command = `declare
+		l_id number;
+		begin
+	`
+	for x := range config.Config.Tasks.Tasks {
+		command = fmt.Sprintf("%s mflow.pkg_taskman.create_task(%v,%v);\n", command, global.IDMaster, config.Config.Tasks.Tasks[x].ID)
+	}
+	command = fmt.Sprintf("%s end;\n", command)
+	_, err = tx.Exec(command)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -247,22 +280,12 @@ func setTaskStatus(IDTask int, status string) (string, error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	var command string
-	if status == runningStatus {
-		command = `
-		begin
-		mflow.pkg_taskman.start_task(:id_master, :id_task);
-		end;
-		`
-		_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask))
-	} else {
-		command = `
-		begin
-		mflow.pkg_taskman.update_task(:id_master, :id_task,:status);
-		end;
-		`
-		_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask), sql.Named("status", status))
-	}
+	command := `
+	begin
+	mflow.pkg_taskman.update_task(:id_master, :id_task,:status);
+	end;
+	`
+	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask), sql.Named("status", status))
 	if err != nil {
 		log.Fatalln(err)
 

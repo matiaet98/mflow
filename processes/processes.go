@@ -29,23 +29,17 @@ type OracleProcess struct {
 func (ps BashProcess) Run() (string, error) {
 	cmd := exec.Command(ps.Command)
 	out, err := cmd.CombinedOutput() //este chabon aparte de combinar stderr y stdout tambien hace el Run... poco intuitivo
-	if err != nil {
-		log.Panicln(err)
-	}
-	return string(out), nil
+	return string(out), err
 }
 
 // Run : Corre un proceso oracle
 func (ps OracleProcess) Run() (string, error) {
+	var output string
 	db, err := sql.Open("goracle", ps.User+"/"+ps.Password+"@"+ps.ConnectionString)
 	if err != nil {
 		log.Panicln(err)
 	}
 	defer db.Close()
-	var output string
 	_, err = db.Exec(ps.Command, sql.Named("respuesta", sql.Out{Dest: &output}))
-	if err != nil {
-		log.Panicln(err)
-	}
-	return output, nil
+	return output, err
 }
