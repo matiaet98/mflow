@@ -1,9 +1,11 @@
 package main
 
 import (
+	"flag"
 	"io"
 	"log"
 	"mflow/config"
+	"mflow/global"
 	"mflow/tasks"
 	"os"
 	"os/signal"
@@ -13,6 +15,8 @@ import (
 
 func init() {
 	var err error
+	flag.StringVar(&global.TaskFile, "taskfile", "./tasks.json", "Archivo json con el DAG de tareas a correr")
+	flag.Parse()
 	err = config.ReadConfig()
 	if err != nil {
 		log.Fatalln("Error Fatal: Revise la configuracion")

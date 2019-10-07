@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"mflow/global"
 	"os"
 	"path/filepath"
 )
@@ -50,12 +51,15 @@ type Task struct {
 }
 
 func getConfigs(path string, conf interface{}) error {
-	dir, _ := filepath.Abs(filepath.Dir(os.Args[0])) //obtengo el path del ejecutable
-	jfile, err := ioutil.ReadFile(dir + "/" + path)
+	jfile, err := ioutil.ReadFile(path) //por si viene como parametro
 	if err != nil {
-		jfile, err = ioutil.ReadFile("./" + path) //antes de salir con error pruebo en el directorio actual
+		dir, _ := filepath.Abs(filepath.Dir(os.Args[0])) //obtengo el path del ejecutable
+		jfile, err = ioutil.ReadFile(dir + "/" + path)
 		if err != nil {
-			return err
+			jfile, err = ioutil.ReadFile("./" + path) //antes de salir con error pruebo en el directorio actual
+			if err != nil {
+				return err
+			}
 		}
 	}
 	err = json.Unmarshal(jfile, &conf)
@@ -75,7 +79,7 @@ func ReadConfig() (err error) {
 	if err != nil {
 		log.Panicln(err)
 	}
-	err = getConfigs("tasks.json", &Config.Tasks)
+	err = getConfigs(global.TaskFile, &Config.Tasks)
 	if err != nil {
 		log.Panicln(err)
 	}
