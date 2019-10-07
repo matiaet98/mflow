@@ -151,6 +151,8 @@ time mflow --taskfile /home/mestevez/siper/c1.json &> /dev/null &
 - [ ] Scheduling: Hoy la herramienta de por si no maneja un scheduler interno ya que para eso existe CERO (La idea es que la corrida de mflow se dispare a travez de tivoli). No obstante, si fuese necesario, se pueden usar herramientas nativas de linux como anacron para lograr el scheduling.
 - [ ] Retry: Agregar la opcion de reintentar una tarea cuando falla, y que sea configurable la cantidad de reintentos posibles
 - [ ] Crear plugin especifico para spark-submit que sepan interpretar la salida de cada comando. Un ejemplo de como hacerlo esta en el codigo de airflow para el hook de spark-submit.
+- [ ] Crear Dockerfile para containerizar el proceso
+- [ ] Test units
 - [ ] Boilerplate con la estructura necesaria para crear mas plugins
 - [ ] Exponer un endpoint REST para consultar las tareas
 - [ ] Crear uana webapp que consuma dicho endpoint para mostrar en un grafico las tareas. Idealmente podria ser un grafico tipo Sankey usando la libreria d3.js: http://bl.ocks.org/d3noob/5028304
