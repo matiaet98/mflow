@@ -19,12 +19,16 @@ type Global struct {
 	MaxProcessConcurrency  int    `json:"max_process_concurrency"`
 	CheckNewConfigInterval int    `json:"check_new_config_interval"`
 	LogDirectory           string `json:"log_directory"`
-	Tasks                  []Task `json:"tasks"`
+	Tasks                  Tasks
 }
 
 // Oracle : Estructura de bloque oracle
 type Oracle struct {
 	Connections []OracleConn `json:"connections"`
+}
+
+type Tasks struct {
+	Tasks []Task `json:"tasks"`
 }
 
 // OracleConn : Estructura de bloque oracle
@@ -42,7 +46,6 @@ type Task struct {
 	Name    string `json:"name"`
 	Command string `json:"command"`
 	Db      string `json:"db,omitempty"`
-	Schema  string `json:"schema,omitempty"`
 	Depends []int  `json:"depends,omitempty"`
 }
 
@@ -69,6 +72,10 @@ func ReadConfig() (err error) {
 		log.Panicln(err)
 	}
 	err = getConfigs("oracle.json", &Ora)
+	if err != nil {
+		log.Panicln(err)
+	}
+	err = getConfigs("tasks.json", &Config.Tasks)
 	if err != nil {
 		log.Panicln(err)
 	}

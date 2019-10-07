@@ -36,6 +36,5 @@ Este archivo es autodescriptivo, contiene la informacion de los distintos dataso
 
 ### TODO
 
-- [ ] separar config global de local de tareas
 - [ ] tomar archivo de tareas por parametro
 - [ ] Crear plugin especifico para spark-submit que sepan interpretar la salida de cada comando. Un ejemplo de como hacerlo esta en el codigo de airflow para el hook de spark-submit.

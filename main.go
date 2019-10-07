@@ -40,14 +40,14 @@ func main() {
 	go signalCatcher()
 	var err error
 	err = tasks.CreateMaster()
-	pendingTasks := tasks.GetPendingTasks(config.Config.Tasks)
+	pendingTasks := tasks.GetPendingTasks(config.Config.Tasks.Tasks)
 	if err != nil {
 		log.Fatalf("No puedo crear el master: " + err.Error())
 	}
 	for len(pendingTasks) > 0 {
 		tasks.RunTasks(pendingTasks, config.Config.MaxProcessConcurrency)
 		time.Sleep(time.Second * time.Duration(config.Config.CheckNewConfigInterval))
-		pendingTasks = tasks.GetPendingTasks(config.Config.Tasks)
+		pendingTasks = tasks.GetPendingTasks(config.Config.Tasks.Tasks)
 	}
 	tasks.EndMaster()
 	log.Println("All tasks finished")
