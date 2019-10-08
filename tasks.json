@@ -9,9 +9,9 @@
         {
             "id": 2,
             "name": "tarea2",
-            "type": "bash",
-            "command": "/home/matiaet98/tmp/tarea2.sh",
-            "depends": [1]
+            "type": "oracle",
+            "command": "begin \n siper.test_data_gen.DESVIO_14_1; \n end;",
+            "db": "siper_fisco"
         },
         {
             "id": 3,

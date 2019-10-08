@@ -5,6 +5,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	_ "gopkg.in/goracle.v2" //se abstrae su uso con la libreria sql
+	"io"
 	"mflow/config"
 	"mflow/global"
 	"mflow/processes"
@@ -27,6 +28,7 @@ func runTask(task config.Task, sem chan bool) {
 		runOracle(task, sem)
 		break
 	}
+	log.Infoln("Finalizo la tarea" + task.Name)
 }
 
 func runBash(task config.Task, sem chan bool) {
@@ -39,21 +41,22 @@ func runBash(task config.Task, sem chan bool) {
 		panic(err)
 	}
 	defer f1.Close()
+	mw := io.MultiWriter(os.Stdout, f1)
 	logger := log.New()
 	logger.SetFormatter(&log.TextFormatter{
 		FullTimestamp:          true,
-		ForceColors:            true,
+		DisableColors:          true,
 		DisableLevelTruncation: true,
 		TimestampFormat:        "2006-01-02 15:04:05",
 	})
-	logger.Out = f1
+	logger.Out = mw
 	ps = processes.BashProcess{Command: task.Command}
 	output, err = ps.Run()
 	logger.Println(output)
-	log.Infoln(output)
+	logger.Infoln(output)
 	if err != nil {
 		setTaskStatus(task.ID, failedStatus)
-		log.Warnln(err)
+		logger.Warnln(err)
 		return
 	}
 	setTaskStatus(task.ID, successStatus)
@@ -69,15 +72,16 @@ func runOracle(task config.Task, sem chan bool) {
 	if err != nil {
 		panic(err)
 	}
+	mw := io.MultiWriter(os.Stdout, f1)
 	defer f1.Close()
 	logger := log.New()
 	logger.SetFormatter(&log.TextFormatter{
 		FullTimestamp:          true,
-		ForceColors:            true,
+		DisableColors:          true,
 		DisableLevelTruncation: true,
 		TimestampFormat:        "2006-01-02 15:04:05",
 	})
-	logger.Out = f1
+	logger.Out = mw
 	conn := getConnection(task.Db)
 	ps = processes.OracleProcess{
 		User:             conn.User,
@@ -86,10 +90,10 @@ func runOracle(task config.Task, sem chan bool) {
 		Command:          task.Command}
 	output, err = ps.Run()
 	logger.Println(output)
-	log.Infoln(output)
+	logger.Infoln(output)
 	if err != nil {
 		setTaskStatus(task.ID, failedStatus)
-		log.Warnln(err)
+		logger.Warnln(err)
 		return
 	}
 	setTaskStatus(task.ID, successStatus)
@@ -138,6 +142,7 @@ func RunTasks(Tasks []config.Task, maxParallel int) {
 	for _, task := range Tasks {
 		if dependenciesStatus(task) == successStatus {
 			sem <- true
+			log.Infoln("Iniciando la tarea" + task.Name)
 			setTaskStatus(task.ID, runningStatus)
 			go runTask(task, sem)
 		} else if dependenciesStatus(task) == failedStatus {
