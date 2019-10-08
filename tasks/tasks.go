@@ -173,7 +173,7 @@ func CreateMaster() (err error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	var command string = `declare
+	command := `declare
 		l_id number;
 		begin
 		mflow.pkg_taskman.create_master(:l_id);

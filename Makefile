@@ -6,7 +6,7 @@ GOTEST=$(GOCMD) test
 GOMOD=$(GOCMD) mod
 APP_NAME=mflow
 MAIN=main.go
-VERSION := $(shell git describe --tags)
+VERSION := $(shell git describe --abbrev=0 --tags)
 NC=\e[00m
 BO=\e[01m
 RD=\e[31m
@@ -16,8 +16,15 @@ BL=\e[34m
 
 all:
 	test build
-build: 
-	@$(GOBUILD) -o $(APP_NAME) -v
+build:
+	mkdir -p release/mflow
+	cp config.json release/mflow/
+	cp oracle.json release/mflow/
+	@$(GOBUILD) -o release/mflow/$(APP_NAME) -v
+	cd release
+	tar -czvf "${APP_NAME}-${VERSION}.tar.gz" ./mflow
+	rm -fr mflow
+	cd ..
 test: 
 	@$(GOTEST) -v -cover
 clean: 

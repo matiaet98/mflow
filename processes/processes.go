@@ -34,12 +34,11 @@ func (ps BashProcess) Run() (string, error) {
 
 // Run : Corre un proceso oracle
 func (ps OracleProcess) Run() (string, error) {
-	var output string
 	db, err := sql.Open("goracle", ps.User+"/"+ps.Password+"@"+ps.ConnectionString)
 	if err != nil {
 		log.Panicln(err)
 	}
 	defer db.Close()
-	_, err = db.Exec(ps.Command, sql.Named("respuesta", sql.Out{Dest: &output}))
-	return output, err
+	_, err = db.Exec(ps.Command)
+	return "", err
 }
