@@ -92,6 +92,13 @@ Ejemplo: **tasks.json**
             "name": "tarea7",
             "type": "bash",
             "command": "/home/mestevez/tmp/tarea7.sh"
+        },
+        {
+            "id": 8,
+            "name": "siper_desvio141",
+            "type": "oracle",
+            "command": "begin \n siper.test_data_gen.DESVIO_14_1; \n end;",
+            "db": "siper_fisco"
         }
     ]
 }
@@ -110,6 +117,28 @@ Este archivo es autodescriptivo, contiene la informacion de los distintos dataso
   ```
 
 - Si reciben el error **ORA-24408: could not generate unique server group name** es porque hay un mismatch en el hostname del equipo. Para arreglarlo, hay que agregar el nombre que nos provee el comando _hostname_ al archivo /etc/hosts
+- El archivo oracle.json puede pasarse tambien como parametro con el flag **--datasources**, pero hay que tener en cuenta que siempre tiene que estar el conector con el nombre "mflow", que es el que usa la aplicacion como backend para sincronizar las tareas. En caso de no pasarse por parametro se usa el que esta en el directorio actual.
+
+Ejemplo: **oracle.json**
+~~~json
+{
+    "connections":[
+        {
+            "name": "mflow",
+            "connection_string": "(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=10.30.205.127)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=fisco)))",
+            "user": "MFLOW",
+            "password": "MFLOW"
+        },
+	{
+            "name": "siper_fisco",
+            "connection_string": "10.30.205.127:1521/fisco",
+            "user": "SIPER",
+            "password": "SIPER"
+        }
+    ]
+}
+~~~
+
 
 ### Instalacion
 - En una instancia Oracle, crear el usuario MFLOW (con roles resource y connect) y correr el script que se encuentra en db/db.sql
@@ -133,10 +162,11 @@ Corrida en background
 mflow &> /dev/null &
 ~~~
 
-Corrida con distintos archivos de tareas
+Corrida con distintos archivos de tareas y datasources
 ~~~bash
-mflow --taskfile /home/mestevez/fiscar/dag1.json &> /dev/null &
+mflow --taskfile /home/mestevez/fiscar/dag1.json --datasources desa.json &> /dev/null &
 mflow --taskfile /home/mestevez/fiscar/dag2.json &> /dev/null &
+mflow --taskfile /home/mestevez/fiscar/dag2.json --datasources prod.json &> /dev/null &
 time mflow --taskfile /home/mestevez/siper/c1.json &> /dev/null &
 ~~~
 

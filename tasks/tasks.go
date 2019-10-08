@@ -167,9 +167,9 @@ func getConnection(name string) config.OracleConn {
 
 //CreateMaster : Crea el master de tareas para esta corrida
 func CreateMaster() (err error) {
-	fisco := getConnection("fisco")
+	conn := getConnection("mflow")
 
-	db, err := sql.Open("goracle", fisco.User+"/"+fisco.Password+"@"+fisco.ConnectionString)
+	db, err := sql.Open("goracle", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -217,8 +217,8 @@ func CreateMaster() (err error) {
 
 //EndMaster : Termina con el master de tareas para esta corrida
 func EndMaster() {
-	fisco := getConnection("fisco")
-	db, err := sql.Open("goracle", fisco.User+"/"+fisco.Password+"@"+fisco.ConnectionString)
+	conn := getConnection("mflow")
+	db, err := sql.Open("goracle", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -244,8 +244,8 @@ func EndMaster() {
 }
 
 func getTaskStatus(IDTask int) (string, time.Time, error) {
-	fisco := getConnection("fisco")
-	db, err := sql.Open("goracle", fisco.User+"/"+fisco.Password+"@"+fisco.ConnectionString)
+	conn := getConnection("mflow")
+	db, err := sql.Open("goracle", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -275,8 +275,8 @@ func getTaskStatus(IDTask int) (string, time.Time, error) {
 }
 
 func setTaskStatus(IDTask int, status string) (string, error) {
-	fisco := getConnection("fisco")
-	db, err := sql.Open("goracle", fisco.User+"/"+fisco.Password+"@"+fisco.ConnectionString)
+	conn := getConnection("mflow")
+	db, err := sql.Open("goracle", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -9,8 +9,8 @@ Image: RHEL7.6-V1.2
 ~~~bash
 wget https://nexus.cloudint.afip.gob.ar/nexus/repository/fisca-infraestructura-raw/oracle/instantclient/oracle-instantclient19.3-basic-19.3.0.0.0-1.x86_64.rpm
 sudo yum install -y oracle-instantclient19.3-basic-19.3.0.0.0-1.x86_64.rpm
-wget https://nexus.cloudint.afip.gob.ar/nexus/repository/fisca-infraestructura-raw/mflow/1.0.1/mflow-1.0.1.tar.gz
-tar xfvz mflow-1.0.1.tar.gz
+wget https://nexus.cloudint.afip.gob.ar/nexus/repository/fisca-infraestructura-raw/mflow/1.0.2/mflow-1.0.2.tar.gz
+tar xfvz mflow-1.0.2.tar.gz
 sudo mv mflow /opt/
 ~~~
 

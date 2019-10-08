@@ -16,6 +16,7 @@ import (
 func init() {
 	var err error
 	flag.StringVar(&global.TaskFile, "taskfile", "./tasks.json", "Archivo json con el DAG de tareas a correr")
+	flag.StringVar(&global.DatasourcesFile, "datasources", "./oracle.json", "Archivo json con los strings de conexion a bases de datos")
 	flag.Parse()
 	log.SetLevel(log.InfoLevel)
 	log.SetFormatter(&log.TextFormatter{

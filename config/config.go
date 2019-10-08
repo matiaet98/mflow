@@ -75,7 +75,7 @@ func ReadConfig() (err error) {
 	if err != nil {
 		log.Panicln(err)
 	}
-	err = getConfigs("oracle.json", &Ora)
+	err = getConfigs(global.DatasourcesFile, &Ora)
 	if err != nil {
 		log.Panicln(err)
 	}
