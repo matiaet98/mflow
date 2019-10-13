@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 )
 
 func runSparkSubmit(task config.Task, sem chan bool) {
@@ -24,7 +25,7 @@ func runSparkSubmit(task config.Task, sem chan bool) {
 	logger := log.New()
 	logger.SetFormatter(&log.TextFormatter{
 		FullTimestamp:          true,
-		DisableColors:          true,
+		ForceColors:            true,
 		DisableLevelTruncation: true,
 		TimestampFormat:        "2006-01-02 15:04:05",
 	})
@@ -33,10 +34,10 @@ func runSparkSubmit(task config.Task, sem chan bool) {
 	if err != nil {
 		log.Panicf("%v", err)
 	}
-	cmd := exec.Command(command)
+	cmds := strings.Split(command, " ")
+	cmd := exec.Command(cmds[0], cmds[1:]...)
 	out, err := cmd.CombinedOutput()
-	logger.Println(out)
-	logger.Infoln(out)
+	logger.Infoln(string(out))
 	if err != nil {
 		setTaskStatus(task.ID, failedStatus)
 		logger.Warnln(err)

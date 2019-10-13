@@ -72,7 +72,7 @@ func RunTasks(Tasks []config.Task, maxParallel int) {
 	for _, task := range Tasks {
 		if dependenciesStatus(task) == successStatus {
 			sem <- true
-			log.Infoln("Iniciando la tarea" + task.Name)
+			log.Infoln("Iniciando la tarea " + task.Name)
 			setTaskStatus(task.ID, runningStatus)
 			go runTask(task, sem)
 		} else if dependenciesStatus(task) == failedStatus {
