@@ -23,6 +23,9 @@ func runTask(task config.Task, sem chan bool) {
 	case "oracle":
 		runOracle(task, sem)
 		break
+	case "spark":
+		runSparkSubmit(task, sem)
+		break
 	}
 	log.Infoln("Finalizo la tarea" + task.Name)
 }

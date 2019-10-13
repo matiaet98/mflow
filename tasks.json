@@ -9,9 +9,20 @@
         {
             "id": 2,
             "name": "tarea2",
-            "type": "oracle",
-            "command": "begin \n siper.test_data_gen.DESVIO_14_1; \n end;",
-            "db": "siper_fisco"
+            "type": "spark",
+            "master": "spark://hdp:7077",
+            "deploy-mode": "client",
+            "driver-memory": "1g",
+            "executor-memory": "4g",
+            "executor-cores": "5",
+            "total-executor-cores": "10",
+            "ingestor-file": "/opt/ingestion/spark/tickets.py",
+            "confs" : [
+                {
+                    "key":"spark.driver.maxResultSize",
+                    "value":"4g"
+                }
+            ]
         },
         {
             "id": 3,
