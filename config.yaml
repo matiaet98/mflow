@@ -1,0 +1,38 @@
+global:
+  max_process_concurrency: 3 # 1 - 65535: Cuantos procesos en simultaneo se pueden correr
+  check_new_config_interval: 10 # 1 - 999999999 Cada cuantos segundos se vuelve a chequear la configuracion
+  log_directory: "./logs/"
+tasks: #importante nunca cambiar el ID de una tarea, sino se pierde su historia (o se mezcla con la de otro)
+  - id: 1
+    type: "bash"
+    command: "/home/matiaet98/test/tarea1.sh"
+  - id: 2
+    type: "bash"
+    command: "/home/matiaet98/test/tarea2.sh"
+    depends: 
+      - 1
+  - id: 3
+    type: "bash"
+    command: "/home/matiaet98/test/tarea3.sh"
+    depends:
+      - 1
+  - id: 4
+    type: "bash"
+    command: "/home/matiaet98/test/tarea4.sh"
+    depends:
+      - 3
+      - 2
+  - id: 5
+    type: "bash"
+    command: "/home/matiaet98/test/tarea5.sh"
+    depends:
+      - 2
+  - id: 6
+    type: "bash"
+    command: "/home/matiaet98/test/tarea6.sh"
+    depends:
+      - 1
+      - 3
+  - id: 7
+    type: "bash"
+    command: "/home/matiaet98/test/tarea7.sh"
