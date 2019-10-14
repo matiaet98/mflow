@@ -21,7 +21,7 @@ func init() {
 	log.SetLevel(log.InfoLevel)
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp:          true,
-		DisableColors:          true,
+		ForceColors:            true,
 		DisableLevelTruncation: true,
 		TimestampFormat:        "2006-01-02 15:04:05",
 	})
@@ -34,7 +34,6 @@ func init() {
 	if err != nil {
 		log.Fatalf("error opening log file: %v", err)
 	}
-
 	mw := io.MultiWriter(os.Stdout, f)
 	log.SetOutput(mw)
 	log.Infoln("Initializing log")
