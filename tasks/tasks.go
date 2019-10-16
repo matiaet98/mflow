@@ -5,12 +5,8 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	_ "gopkg.in/goracle.v2" //se abstrae su uso con la libreria sql
-	"io"
 	"mflow/config"
 	"mflow/global"
-	"mflow/processes"
-	"os"
-	"strconv"
 	"time"
 )
 
@@ -27,77 +23,11 @@ func runTask(task config.Task, sem chan bool) {
 	case "oracle":
 		runOracle(task, sem)
 		break
+	case "spark":
+		runSparkSubmit(task, sem)
+		break
 	}
 	log.Infoln("Finalizo la tarea" + task.Name)
-}
-
-func runBash(task config.Task, sem chan bool) {
-	defer func() { <-sem }()
-	var output string
-	var err error
-	var ps processes.Process
-	f1, err := os.Create(config.Config.LogDirectory + "master_" + strconv.Itoa(global.IDMaster) + "_task_" + task.Name + ".log")
-	if err != nil {
-		panic(err)
-	}
-	defer f1.Close()
-	mw := io.MultiWriter(os.Stdout, f1)
-	logger := log.New()
-	logger.SetFormatter(&log.TextFormatter{
-		FullTimestamp:          true,
-		DisableColors:          true,
-		DisableLevelTruncation: true,
-		TimestampFormat:        "2006-01-02 15:04:05",
-	})
-	logger.Out = mw
-	ps = processes.BashProcess{Command: task.Command}
-	output, err = ps.Run()
-	logger.Println(output)
-	logger.Infoln(output)
-	if err != nil {
-		setTaskStatus(task.ID, failedStatus)
-		logger.Warnln(err)
-		return
-	}
-	setTaskStatus(task.ID, successStatus)
-	return
-}
-
-func runOracle(task config.Task, sem chan bool) {
-	defer func() { <-sem }()
-	var output string
-	var err error
-	var ps processes.Process
-	f1, err := os.Create(config.Config.LogDirectory + "master_" + strconv.Itoa(global.IDMaster) + "_task_" + task.Name + ".log")
-	if err != nil {
-		panic(err)
-	}
-	mw := io.MultiWriter(os.Stdout, f1)
-	defer f1.Close()
-	logger := log.New()
-	logger.SetFormatter(&log.TextFormatter{
-		FullTimestamp:          true,
-		DisableColors:          true,
-		DisableLevelTruncation: true,
-		TimestampFormat:        "2006-01-02 15:04:05",
-	})
-	logger.Out = mw
-	conn := getConnection(task.Db)
-	ps = processes.OracleProcess{
-		User:             conn.User,
-		Password:         conn.Password,
-		ConnectionString: conn.ConnectionString,
-		Command:          task.Command}
-	output, err = ps.Run()
-	logger.Println(output)
-	logger.Infoln(output)
-	if err != nil {
-		setTaskStatus(task.ID, failedStatus)
-		logger.Warnln(err)
-		return
-	}
-	setTaskStatus(task.ID, successStatus)
-	return
 }
 
 //GetPendingTasks : Obtiene las tareas pendientes
@@ -142,7 +72,7 @@ func RunTasks(Tasks []config.Task, maxParallel int) {
 	for _, task := range Tasks {
 		if dependenciesStatus(task) == successStatus {
 			sem <- true
-			log.Infoln("Iniciando la tarea" + task.Name)
+			log.Infoln("Iniciando la tarea " + task.Name)
 			setTaskStatus(task.ID, runningStatus)
 			go runTask(task, sem)
 		} else if dependenciesStatus(task) == failedStatus {

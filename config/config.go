@@ -42,12 +42,40 @@ type OracleConn struct {
 
 //Task : Estructura de una tarea
 type Task struct {
-	ID      int    `json:"id"`
-	Type    string `json:"type"`
-	Name    string `json:"name"`
-	Command string `json:"command"`
-	Db      string `json:"db,omitempty"`
-	Depends []int  `json:"depends,omitempty"`
+	ID                 int          `json:"id"`
+	Type               string       `json:"type"`
+	Name               string       `json:"name"`
+	Command            string       `json:"command,omitempty"`
+	Db                 string       `json:"db,omitempty"`
+	Depends            []int        `json:"depends,omitempty"`
+	DeployMode         string       `json:"deploy-mode,omitempty"`
+	Master             string       `json:"master,omitempty"`
+	TotalExecutorCores string       `json:"total-executor-cores,omitempty"`
+	ExecutorCores      string       `json:"executor-cores,omitempty"`
+	ExecutorMemory     string       `json:"executor-memory,omitempty"`
+	DriverMemory       string       `json:"driver-memory,omitempty"`
+	IngestorFile       string       `json:"ingestor-file,omitempty"`
+	Class              string       `json:"class,omitempty"`
+	Parameters         []Parameters `json:"parameters,omitempty"`
+	Confs              []SparkConf  `json:"confs,omitempty"`
+	EnvVars            []EnvVars    `json:"env,omitempty"`
+}
+
+//SparkConf configuraciones de spark que se desean pasar a un proceso
+type SparkConf struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+//EnvVars Variables de entorno que se desean setear antes de ejecutar un comando
+type EnvVars struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+//Parameters : Parametros para las tareas que lanzamos
+type Parameters struct {
+	Parameter string `json:"parameter"`
 }
 
 func getConfigs(path string, conf interface{}) error {
