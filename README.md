@@ -36,7 +36,7 @@ Ejemplo: **config.json**
 En este archivo se define el grafo de procesos a ejecutar. Las variables son las siguientes para cada tarea:
 id: El identificador unico de la tarea dentro de su grupo. Es importantisimo que no haya duplicados
 name: Un nombre simbolico para la tarea. Sirve mas que nada para poder identificar el archivo de log
-type: El tipo de tareas que se pueden correr. Hasta ahora solo acepta de tipo bash y oracle, pero se puede extender facilmente.
+type: El tipo de tareas que se pueden correr. Hasta ahora solo acepta de tipo bash, oracle y spark-submit, pero se puede extender facilmente.
 depends: Es un array con los ID de las tareas de las cuales depende esta tarea. Si las mismas no fueron completadas con SUCCESS, la misma no puede iniciar.
 command: El comando que se desea ejecutar. Esta ligado al tipo de proceso.
 Db: Identificador de la conexion en el cual se corre el proceso (para procesos oracle)
@@ -73,25 +73,23 @@ Ejemplo: **tasks.json**
             "command": "/home/mestevez/tmp/tarea4.sh",
             "depends": [3,2]
         },
-        {
+         {
             "id": 5,
-            "name": "tarea5",
-            "type": "bash",
-            "command": "/home/mestevez/tmp/tarea5.sh",
-            "depends": [2]
-        },
-        {
-            "id": 6,
-            "name": "tarea6",
-            "type": "bash",
-            "command": "/home/mestevez/tmp/tarea6.sh",
-            "depends": [1,3]
-        },
-        {
-            "id": 7,
-            "name": "tarea7",
-            "type": "bash",
-            "command": "/home/mestevez/tmp/tarea7.sh"
+            "name": "sp1_tickets",
+            "type": "spark",
+            "master": "spark://hdp:7077",
+            "deploy-mode": "client",
+            "driver-memory": "1g",
+            "executor-memory": "4g",
+            "executor-cores": "5",
+            "total-executor-cores": "10",
+            "ingestor-file": "/opt/ingestion/spark/tickets.py",
+            "confs" : [
+                {
+                    "key":"spark.driver.maxResultSize",
+                    "value":"4g"
+                }
+            ]
         },
         {
             "id": 8,
