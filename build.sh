@@ -5,13 +5,13 @@ VERSION=$(git describe --abbrev=0 --tags)
 
 
 build(){
-	mkdir -p release/mflow
-        cp config.json release/mflow/
-        cp oracle.json release/mflow/
-        go build -o release/mflow/$APP_NAME -v
+	mkdir -p "release/${APP_NAME}-${VERSION}"
+        cp config.json "release/${APP_NAME}-${VERSION}"
+        cp oracle.json "release/${APP_NAME}-${VERSION}"
+        go build -o "release/${APP_NAME}-${VERSION}/${APP_NAME}" -v
         pushd release
-        tar -czvf "${APP_NAME}-${VERSION}.tar.gz" ./mflow
-        rm -fr mflow
+        tar -czvf "${APP_NAME}-${VERSION}.tar.gz" "./${APP_NAME}-${VERSION}"
+        rm -fr "${APP_NAME}-${VERSION}"
         popd
 }
 
@@ -29,15 +29,14 @@ run(){
 }
 
 getdeps(){
-	go mod vendor
-	go mod download
-	go mod verify
-	go mod tidy
-	go mod graph
+	go get
 }
 
 case "$1" in
-   build) build ;;
+   build) 
+	   clean
+	   build 
+	;;
    run)  run;;
    clean) clean;;
    getdeps) getdeps;;

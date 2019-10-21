@@ -21,7 +21,7 @@ func init() {
 	log.SetLevel(log.InfoLevel)
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp:          true,
-		DisableColors:          true,
+		ForceColors:            true,
 		DisableLevelTruncation: true,
 		TimestampFormat:        "2006-01-02 15:04:05",
 	})
