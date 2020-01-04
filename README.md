@@ -34,8 +34,7 @@ Ejemplo: **config.json**
 ### Archivo de tareas tasks.json
 
 En este archivo se define el grafo de procesos a ejecutar. Las variables son las siguientes para cada tarea:
-id: El identificador unico de la tarea dentro de su grupo. Es importantisimo que no haya duplicados
-name: Un nombre simbolico para la tarea. Sirve mas que nada para poder identificar el archivo de log
+id: Un nombre identificador unico para la tarea.
 type: El tipo de tareas que se pueden correr. Hasta ahora solo acepta de tipo bash y oracle, pero se puede extender facilmente.
 depends: Es un array con los ID de las tareas de las cuales depende esta tarea. Si las mismas no fueron completadas con SUCCESS, la misma no puede iniciar.
 command: El comando que se desea ejecutar. Esta ligado al tipo de proceso.
@@ -47,55 +46,47 @@ Ejemplo: **tasks.json**
 {
     "tasks": [
         {
-            "id": 1,
-            "name": "tarea1",
+            "id": "tarea1",
             "type": "bash",
             "command": "/home/mestevez/tmp/tarea1.sh"
         },
         {
-            "id": 2,
-            "name": "tarea2",
+            "id": "tarea2",
             "type": "bash",
             "command": "/home/mestevez/tmp/tarea2.sh",
-            "depends": [1]
+            "depends": ["tarea1"]
         },
         {
-            "id": 3,
-            "name": "tarea3",
+            "id": "tarea3",
             "type": "bash",
             "command": "/home/mestevez/tmp/tarea3.sh",
-            "depends": [1]
+            "depends": ["tarea2"]
         },
         {
-            "id": 4,
-            "name": "tarea4",
+            "id": "tarea4",
             "type": "bash",
             "command": "/home/mestevez/tmp/tarea4.sh",
-            "depends": [3,2]
+            "depends": ["tarea1","tarea3"]
         },
         {
-            "id": 5,
-            "name": "tarea5",
+            "id": "tarea5",
             "type": "bash",
             "command": "/home/mestevez/tmp/tarea5.sh",
-            "depends": [2]
+            "depends": ["tarea2"]
         },
         {
-            "id": 6,
-            "name": "tarea6",
+            "id": "tarea6",
             "type": "bash",
             "command": "/home/mestevez/tmp/tarea6.sh",
-            "depends": [1,3]
+            "depends": ["tarea5","tarea2"]
         },
         {
-            "id": 7,
-            "name": "tarea7",
+            "id": "tarea7",
             "type": "bash",
             "command": "/home/mestevez/tmp/tarea7.sh"
         },
         {
-            "id": 8,
-            "name": "siper_desvio141",
+            "id": "siper_desvio141",
             "type": "oracle",
             "command": "begin \n siper.test_data_gen.DESVIO_14_1; \n end;",
             "db": "siper_fisco"

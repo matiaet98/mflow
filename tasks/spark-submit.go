@@ -2,21 +2,23 @@ package tasks
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	_ "gopkg.in/goracle.v2" //se abstrae su uso con la libreria sql
 	"io"
-	"mflow/config"
-	"mflow/global"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/matiaet98/mflow/config"
+	"github.com/matiaet98/mflow/global"
+
+	log "github.com/sirupsen/logrus"
+	_ "github.com/godror/godror" //se abstrae su uso con la libreria sql
 )
 
 func runSparkSubmit(task config.Task, sem chan bool) {
 	defer func() { <-sem }()
 	var err error
-	f1, err := os.Create(config.Config.LogDirectory + "master_" + strconv.Itoa(global.IDMaster) + "_task_" + task.Name + ".log")
+	f1, err := os.Create(config.Config.LogDirectory + "master_" + strconv.Itoa(global.IDMaster) + "_task_" + task.ID + ".log")
 	if err != nil {
 		panic(err)
 	}

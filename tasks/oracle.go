@@ -3,19 +3,21 @@ package tasks
 import (
 	"context"
 	"database/sql"
-	log "github.com/sirupsen/logrus"
-	_ "gopkg.in/goracle.v2" //se abstrae su uso con la libreria sql
 	"io"
-	"mflow/config"
-	"mflow/global"
 	"os"
 	"strconv"
+
+	"github.com/matiaet98/mflow/config"
+	"github.com/matiaet98/mflow/global"
+
+	log "github.com/sirupsen/logrus"
+	_ "github.com/godror/godror" //se abstrae su uso con la libreria sql
 )
 
 func runOracle(task config.Task, sem chan bool) {
 	defer func() { <-sem }()
 	var err error
-	f1, err := os.Create(config.Config.LogDirectory + "master_" + strconv.Itoa(global.IDMaster) + "_task_" + task.Name + ".log")
+	f1, err := os.Create(config.Config.LogDirectory + "master_" + strconv.Itoa(global.IDMaster) + "_task_" + task.ID + ".log")
 	if err != nil {
 		log.Panic(err)
 	}
@@ -30,7 +32,7 @@ func runOracle(task config.Task, sem chan bool) {
 	})
 	logger.Out = mw
 	conn := getConnection(task.Db)
-	db, err := sql.Open("goracle", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
+	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
 	if err != nil {
 		log.Panicln(err)
 	}

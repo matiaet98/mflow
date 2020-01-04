@@ -3,11 +3,11 @@ package tasks
 import (
 	"database/sql"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	_ "gopkg.in/goracle.v2" //se abstrae su uso con la libreria sql
-	"mflow/config"
-	"mflow/global"
+	"github.com/matiaet98/mflow/config"
+	"github.com/matiaet98/mflow/global"
 	"time"
+	log "github.com/sirupsen/logrus"
+	_ "github.com/godror/godror" //se abstrae su uso con la libreria sql
 )
 
 const runningStatus string = "RUNNING"
@@ -27,7 +27,7 @@ func runTask(task config.Task, sem chan bool) {
 		runSparkSubmit(task, sem)
 		break
 	}
-	log.Infoln("Finalizo la tarea" + task.Name)
+	log.Infoln("Finalizo la tarea" + task.ID)
 }
 
 //GetPendingTasks : Obtiene las tareas pendientes
@@ -72,7 +72,7 @@ func RunTasks(Tasks []config.Task, maxParallel int) {
 	for _, task := range Tasks {
 		if dependenciesStatus(task) == successStatus {
 			sem <- true
-			log.Infoln("Iniciando la tarea " + task.Name)
+			log.Infoln("Iniciando la tarea " + task.ID)
 			setTaskStatus(task.ID, runningStatus)
 			go runTask(task, sem)
 		} else if dependenciesStatus(task) == failedStatus {
@@ -99,7 +99,7 @@ func getConnection(name string) config.OracleConn {
 func CreateMaster() (err error) {
 	conn := getConnection("mflow")
 
-	db, err := sql.Open("goracle", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
+	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -131,7 +131,7 @@ func CreateMaster() (err error) {
 		begin
 	`
 	for x := range config.Config.Tasks.Tasks {
-		command = fmt.Sprintf("%s mflow.pkg_taskman.create_task(%v,%v);\n", command, global.IDMaster, config.Config.Tasks.Tasks[x].ID)
+		command = fmt.Sprintf("%s mflow.pkg_taskman.create_task(%v,'%v');\n", command, global.IDMaster, config.Config.Tasks.Tasks[x].ID)
 	}
 	command = fmt.Sprintf("%s end;\n", command)
 	_, err = tx.Exec(command)
@@ -148,7 +148,7 @@ func CreateMaster() (err error) {
 //EndMaster : Termina con el master de tareas para esta corrida
 func EndMaster() {
 	conn := getConnection("mflow")
-	db, err := sql.Open("goracle", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
+	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -173,9 +173,9 @@ func EndMaster() {
 	return
 }
 
-func getTaskStatus(IDTask int) (string, time.Time, error) {
+func getTaskStatus(IDTask string) (string, time.Time, error) {
 	conn := getConnection("mflow")
-	db, err := sql.Open("goracle", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
+	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -204,9 +204,9 @@ func getTaskStatus(IDTask int) (string, time.Time, error) {
 	return status, fecha, nil
 }
 
-func setTaskStatus(IDTask int, status string) (string, error) {
+func setTaskStatus(IDTask string, status string) (string, error) {
 	conn := getConnection("mflow")
-	db, err := sql.Open("goracle", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
+	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
 	if err != nil {
 		log.Fatalln(err)
 	}

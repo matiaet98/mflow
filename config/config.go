@@ -2,11 +2,13 @@ package config
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"mflow/global"
 	"os"
 	"path/filepath"
+
+	"github.com/matiaet98/mflow/global"
+
+	log "github.com/sirupsen/logrus"
 )
 
 //Config : Global donde se guarda la configuracion
@@ -28,6 +30,7 @@ type Oracle struct {
 	Connections []OracleConn `json:"connections"`
 }
 
+//Tasks : Grupo de tareas
 type Tasks struct {
 	Tasks []Task `json:"tasks"`
 }
@@ -42,12 +45,11 @@ type OracleConn struct {
 
 //Task : Estructura de una tarea
 type Task struct {
-	ID                 int          `json:"id"`
+	ID                 string       `json:"id"`
 	Type               string       `json:"type"`
-	Name               string       `json:"name"`
 	Command            string       `json:"command,omitempty"`
 	Db                 string       `json:"db,omitempty"`
-	Depends            []int        `json:"depends,omitempty"`
+	Depends            []string     `json:"depends,omitempty"`
 	DeployMode         string       `json:"deploy-mode,omitempty"`
 	Master             string       `json:"master,omitempty"`
 	TotalExecutorCores string       `json:"total-executor-cores,omitempty"`

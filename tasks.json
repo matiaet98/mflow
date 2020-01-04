@@ -1,14 +1,12 @@
 {
     "tasks": [
         {
-            "id": 1,
-            "name": "tarea1",
+            "id": "tarea1",
             "type": "bash",
             "command": "/home/matiaet98/tmp/tarea1.sh"
         },
         {
-            "id": 2,
-            "name": "tarea2",
+            "id": "tarea2",
             "type": "spark",
             "master": "spark://hdp:7077",
             "deploy-mode": "client",
@@ -25,36 +23,31 @@
             ]
         },
         {
-            "id": 3,
-            "name": "tarea3",
+            "id": "tarea3",
             "type": "bash",
             "command": "/home/matiaet98/tmp/tarea3.sh",
-            "depends": [1]
+            "depends": ["tarea1"]
         },
         {
-            "id": 4,
-            "name": "tarea4",
+            "id": "tarea4",
             "type": "bash",
             "command": "/home/matiaet98/tmp/tarea4.sh",
-            "depends": [3,2]
+            "depends": ["tarea3","tarea2"]
         },
         {
-            "id": 5,
-            "name": "tarea5",
+            "id": "tarea5",
             "type": "bash",
             "command": "/home/matiaet98/tmp/tarea5.sh",
-            "depends": [2]
+            "depends": ["tarea2"]
         },
         {
-            "id": 6,
-            "name": "tarea6",
+            "id": "tarea6",
             "type": "bash",
             "command": "/home/matiaet98/tmp/tarea6.sh",
-            "depends": [1,3]
+            "depends": ["tarea1","tarea3"]
         },
         {
-            "id": 7,
-            "name": "tarea7",
+            "id": "tarea7",
             "type": "bash",
             "command": "/home/matiaet98/tmp/tarea7.sh"
         }
