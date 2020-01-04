@@ -70,10 +70,21 @@ Ejemplo: **tasks.json**
             "depends": ["tarea1","tarea3"]
         },
         {
-            "id": "tarea5",
-            "type": "bash",
-            "command": "/home/mestevez/tmp/tarea5.sh",
-            "depends": ["tarea2"]
+            "id": "sp1_tickets",
+            "type": "spark",
+            "master": "spark://hdp:7077",
+            "deploy-mode": "client",
+            "driver-memory": "1g",
+            "executor-memory": "4g",
+            "executor-cores": "5",
+            "total-executor-cores": "10",
+            "ingestor-file": "/opt/ingestion/spark/tickets.py",
+            "confs" : [
+                {
+                    "key":"spark.driver.maxResultSize",
+                    "value":"4g"
+                }
+            ]
         },
         {
             "id": "tarea6",
@@ -85,6 +96,24 @@ Ejemplo: **tasks.json**
             "id": "tarea7",
             "type": "bash",
             "command": "/home/mestevez/tmp/tarea7.sh"
+        },
+        {
+            "id": "sp1",
+            "type": "spark",
+            "master": "spark://hdp:7077",
+            "deploy-mode": "client",
+            "driver-memory": "1g",
+            "executor-memory": "4g",
+            "executor-cores": "5",
+            "total-executor-cores": "10",
+            "ingestor-file": "/opt/ingestion/spark/scala/fisca-ingestion.jar",
+            "class": "ar.gob.afip.fiscalizacion.ingestion.batch.raw.ftContribuyentes",
+            "confs" : [
+                {
+                    "key":"spark.driver.maxResultSize",
+                    "value":"4g"
+                }
+            ]
         },
         {
             "id": "siper_desvio141",
