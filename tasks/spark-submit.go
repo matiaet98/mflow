@@ -70,8 +70,20 @@ func buildCommand(task config.Task) (command string, err error) {
 		command += fmt.Sprintf("--deploy-mode %s ", task.DeployMode)
 	}
 
-	//supervise y verbose
-	command += "--supervise --verbose "
+	//Name
+	if task.Name != "" {
+		command += fmt.Sprintf("--name %s ", task.Name)
+	}
+
+	//Verbose
+	if task.Verbose != "" {
+		command += "--verbose "
+	}
+
+	//Supervise
+	if task.Supervise != "" {
+		command += "--supervise "
+	}
 
 	//class
 	if task.Class != "" {
@@ -81,6 +93,16 @@ func buildCommand(task config.Task) (command string, err error) {
 	//driver memory
 	if task.DriverMemory != "" {
 		command += fmt.Sprintf("--driver-memory %s ", task.DriverMemory)
+	}
+
+	//driver cores - only in cluster mode
+	if task.DriverCores != "" {
+		command += fmt.Sprintf("--driver-cores %s ", task.DriverCores)
+	}
+
+	//num executors - only in yarn mode
+	if task.NumExecutors != "" {
+		command += fmt.Sprintf("--num-executors %s ", task.NumExecutors)
 	}
 
 	//executor memory

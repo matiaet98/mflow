@@ -50,12 +50,17 @@ type Task struct {
 	Command            string       `json:"command,omitempty"`
 	Db                 string       `json:"db,omitempty"`
 	Depends            []string     `json:"depends,omitempty"`
-	DeployMode         string       `json:"deploy-mode,omitempty"`
 	Master             string       `json:"master,omitempty"`
+	DeployMode         string       `json:"deploy-mode,omitempty"`
+	Name               string       `json:"name,omitempty"`
 	TotalExecutorCores string       `json:"total-executor-cores,omitempty"`
 	ExecutorCores      string       `json:"executor-cores,omitempty"`
 	ExecutorMemory     string       `json:"executor-memory,omitempty"`
+	NumExecutors       string       `json:"num-executors,omitempty"`
 	DriverMemory       string       `json:"driver-memory,omitempty"`
+	DriverCores        string       `json:"driver-cores,omitempty"`
+	Verbose			   string		`json:"verbose,omitempty"`
+	Supervise          string       `json:"supervise,omitempty"`
 	IngestorFile       string       `json:"ingestor-file,omitempty"`
 	Class              string       `json:"class,omitempty"`
 	Parameters         []Parameters `json:"parameters,omitempty"`
