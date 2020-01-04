@@ -189,7 +189,7 @@ func ValidateTaskIds(AllTasks []config.Task) (err error){
 	return
 }
 
-//ValidateTaskDependencies Valida que no las dependencias declaradas existan como tareas
+//ValidateTaskDependencies Valida que las dependencias declaradas existan como tareas
 func ValidateTaskDependencies(AllTasks []config.Task) (err error){
 	var exist bool
 	for _, task := range AllTasks {
@@ -202,8 +202,27 @@ func ValidateTaskDependencies(AllTasks []config.Task) (err error){
 				}
 			}
 			if(!exist){
-				err = errors.New("Existen errores de dependencias, se sale")
+				err = errors.New("Existen errores de dependencias inexistentes, se sale")
 				log.Error("La dependencia ID:"+dep+" de la tarea: "+task.ID+" no existe")
+			}
+		}
+	}
+	return
+}
+
+//ValidateTaskCiclicDependencies Valida que entre dependencias declaradas no haya circulares
+func ValidateTaskCiclicDependencies(AllTasks []config.Task) (err error){
+	for _, task := range AllTasks {
+		for _ , dep := range task.Depends {
+			for _, task2 := range AllTasks {
+				if(task2.ID == dep){
+					for _ , dep2 := range task2.Depends {
+						if(dep2 == task.ID){
+							err = errors.New("Existen errores de dependencias circulares, se sale")
+							log.Error("Error de dependencias circulares entre las tareas "+task.ID+" y "+task2.ID)
+						}
+					}
+				}
 			}
 		}
 	}

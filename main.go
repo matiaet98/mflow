@@ -46,10 +46,7 @@ func signalCatcher() {
 	log.Fatal("Signal de terminacion capturada, se sale")
 }
 
-//Salir : Se ejecuta cuando se sale del programa
-
-func main() {
-	go signalCatcher()
+func taskValidations(){
 	var err error
 	err = tasks.ValidateTaskIds(config.Config.Tasks.Tasks)
 	if err != nil {
@@ -59,6 +56,18 @@ func main() {
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
+	err = tasks.ValidateTaskCiclicDependencies(config.Config.Tasks.Tasks)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+}
+
+//Salir : Se ejecuta cuando se sale del programa
+
+func main() {
+	go signalCatcher()
+	taskValidations()
+	var err error
 	err = tasks.CreateMaster()
 	pendingTasks := tasks.GetPendingTasks(config.Config.Tasks.Tasks)
 	if err != nil {
