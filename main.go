@@ -55,6 +55,10 @@ func main() {
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
+	err = tasks.ValidateTaskDependencies(config.Config.Tasks.Tasks)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
 	err = tasks.CreateMaster()
 	pendingTasks := tasks.GetPendingTasks(config.Config.Tasks.Tasks)
 	if err != nil {

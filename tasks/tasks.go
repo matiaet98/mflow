@@ -189,6 +189,27 @@ func ValidateTaskIds(AllTasks []config.Task) (err error){
 	return
 }
 
+//ValidateTaskDependencies Valida que no las dependencias declaradas existan como tareas
+func ValidateTaskDependencies(AllTasks []config.Task) (err error){
+	var exist bool
+	for _, task := range AllTasks {
+		for _ , dep := range task.Depends{
+			exist = false
+			for _, task2 := range AllTasks{
+				if(task2.ID == dep){
+					exist = true
+					return
+				}
+			}
+			if(!exist){
+				err = errors.New("Existen errores de dependencias, se sale")
+				log.Error("La dependencia ID:"+dep+" de la tarea: "+task.ID+" no existe")
+			}
+		}
+	}
+	return
+}
+
 func getTaskStatus(IDTask string) (string, time.Time, error) {
 	conn := getConnection("mflow")
 	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
