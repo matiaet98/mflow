@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/matiaet98/mflow/config"
 	"github.com/matiaet98/mflow/global"
@@ -169,6 +170,21 @@ func EndMaster() {
 	err = tx.Commit()
 	if err != nil {
 		log.Panicln(err)
+	}
+	return
+}
+
+//ValidateTaskIds Valida que no haya IDs repetidos en el archivo de tareas proporcionado
+func ValidateTaskIds(AllTasks []config.Task) (err error){
+	dup := make(map[string]int)
+	for _, task := range AllTasks {
+		_, exists := dup[task.ID]
+		if exists{
+			err = errors.New("Hay tareas duplicadas, se sale")
+			log.Error("La tarea "+task.ID+" esta duplicada")
+		} else{
+			dup[task.ID]++
+		}
 	}
 	return
 }

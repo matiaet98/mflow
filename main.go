@@ -51,6 +51,10 @@ func signalCatcher() {
 func main() {
 	go signalCatcher()
 	var err error
+	err = tasks.ValidateTaskIds(config.Config.Tasks.Tasks)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
 	err = tasks.CreateMaster()
 	pendingTasks := tasks.GetPendingTasks(config.Config.Tasks.Tasks)
 	if err != nil {

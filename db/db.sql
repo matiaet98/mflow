@@ -1,36 +1,51 @@
-CREATE SEQUENCE  "mflow"."SEQ_TASKS_MASTER"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 ORDER  NOCYCLE;
+--------------------------------------------------------
+--  File created - Saturday-January-04-2020   
+--------------------------------------------------------
+--------------------------------------------------------
+--  DDL for Sequence SEQ_TASKS
+--------------------------------------------------------
 
-CREATE TABLE "mflow"."TASKS_MASTER"(
-    "ID" NUMBER,
-    "START_DATE" DATE,
-	"END_DATE" DATE,
-	"STATUS" VARCHAR2(20)
-);
-COMMENT ON COLUMN "mflow"."TASKS_MASTER"."STATUS" IS 'STARTED / ENDED';
-CREATE UNIQUE INDEX "mflow"."ID_TASKS_MASTER_PK1" ON "mflow"."TASKS_MASTER" ("ID");
+   CREATE SEQUENCE  "MFLOW"."SEQ_TASKS"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 ORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+--------------------------------------------------------
+--  DDL for Sequence SEQ_TASKS_MASTER
+--------------------------------------------------------
 
-CREATE TABLE "mflow"."TASKS" 
-   ("ID_MASTER" NUMBER,
-	"ID_TASK" VARCHAR2(4000), 
-	"START_DATE" DATE, 
-	"END_DATE" DATE, 
-	"STATUS" VARCHAR2(20)
-   ) ;
-COMMENT ON COLUMN "mflow"."TASKS"."STATUS" IS 'SUCCESS / FAILED / RUNNING / NONE';
-CREATE UNIQUE INDEX "mflow"."TASKS_PK1" ON "mflow"."TASKS" ("ID_MASTER","ID_TASK");
+   CREATE SEQUENCE  "MFLOW"."SEQ_TASKS_MASTER"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 124 CACHE 20 ORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+--------------------------------------------------------
+--  DDL for Table TASKS
+--------------------------------------------------------
 
+  CREATE TABLE "MFLOW"."TASKS" ("ID_MASTER" NUMBER, "ID_TASK" VARCHAR2(4000), "START_DATE" DATE, "END_DATE" DATE, "STATUS" VARCHAR2(20)) ;
 
-ALTER TABLE "mflow"."TASKS_MASTER" MODIFY ("ID" NOT NULL ENABLE);
-ALTER TABLE "mflow"."TASKS_MASTER" MODIFY ("START_DATE" NOT NULL ENABLE);
-ALTER TABLE "mflow"."TASKS_MASTER" MODIFY ("STATUS" NOT NULL ENABLE);
+   COMMENT ON COLUMN "MFLOW"."TASKS"."STATUS" IS 'SUCCESS / FAILED / RUNNING / NONE';
+--------------------------------------------------------
+--  DDL for Table TASKS_MASTER
+--------------------------------------------------------
 
-ALTER TABLE "mflow"."TASKS" MODIFY ("ID_MASTER" NOT NULL ENABLE);
-ALTER TABLE "mflow"."TASKS" MODIFY ("ID_TASK" NOT NULL ENABLE);
-ALTER TABLE "mflow"."TASKS" MODIFY ("START_DATE" NOT NULL ENABLE);
-ALTER TABLE "mflow"."TASKS" MODIFY ("STATUS" NOT NULL ENABLE);
-/
+  CREATE TABLE "MFLOW"."TASKS_MASTER" ("ID" NUMBER, "START_DATE" DATE, "END_DATE" DATE, "STATUS" VARCHAR2(20)) ;
 
-create or replace PACKAGE "PKG_TASKMAN" AS
+   COMMENT ON COLUMN "MFLOW"."TASKS_MASTER"."STATUS" IS 'STARTED / ENDED';
+--------------------------------------------------------
+--  DDL for Index ID_TASKS_MASTER_PK1
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "MFLOW"."ID_TASKS_MASTER_PK1" ON "MFLOW"."TASKS_MASTER" ("ID") ;
+--------------------------------------------------------
+--  DDL for Index TASKS_PK2
+--------------------------------------------------------
+
+  CREATE INDEX "MFLOW"."TASKS_PK2" ON "MFLOW"."TASKS" ("ID_TASK") ;
+--------------------------------------------------------
+--  DDL for Index TASKS_PK1
+--------------------------------------------------------
+
+  CREATE INDEX "MFLOW"."TASKS_PK1" ON "MFLOW"."TASKS" ("ID_MASTER") ;
+
+--------------------------------------------------------
+--  DDL for Package PKG_TASKMAN
+--------------------------------------------------------
+
+  CREATE OR REPLACE PACKAGE "MFLOW"."PKG_TASKMAN" AS
 
 PROCEDURE CREATE_MASTER(I_ID OUT TASKS_MASTER.ID%TYPE);
 PROCEDURE END_MASTER(I_ID IN TASKS_MASTER.ID%TYPE);
@@ -40,18 +55,19 @@ PROCEDURE GET_STATUS(I_ID_MASTER IN TASKS.ID_MASTER%TYPE,I_ID_TASK IN TASKS.ID_T
 
 
 END "PKG_TASKMAN";
-/
 
-create or replace PACKAGE BODY "PKG_TASKMAN" AS
+/
+--------------------------------------------------------
+--  DDL for Package Body PKG_TASKMAN
+--------------------------------------------------------
+
+  CREATE OR REPLACE PACKAGE BODY "MFLOW"."PKG_TASKMAN" AS
 
 PROCEDURE CREATE_MASTER(I_ID OUT TASKS_MASTER.ID%TYPE) AS
 BEGIN
-
 I_ID := SEQ_TASKS_MASTER.NEXTVAL;
-
 INSERT INTO TASKS_MASTER(ID,START_DATE,END_DATE,STATUS)
 VALUES(I_ID,SYSDATE,NULL,'STARTED');
-
 END CREATE_MASTER;
 
 FUNCTION GET_MASTER_STATUS(I_ID IN TASKS_MASTER.ID%TYPE) RETURN TASKS_MASTER.STATUS%TYPE IS
@@ -106,4 +122,20 @@ EXCEPTION WHEN OTHERS THEN
 END GET_STATUS;
 
 END PKG_TASKMAN;
+
 /
+--------------------------------------------------------
+--  Constraints for Table TASKS
+--------------------------------------------------------
+
+  ALTER TABLE "MFLOW"."TASKS" MODIFY ("ID_MASTER" NOT NULL ENABLE);
+  ALTER TABLE "MFLOW"."TASKS" MODIFY ("ID_TASK" NOT NULL ENABLE);
+  ALTER TABLE "MFLOW"."TASKS" MODIFY ("START_DATE" NOT NULL ENABLE);
+  ALTER TABLE "MFLOW"."TASKS" MODIFY ("STATUS" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table TASKS_MASTER
+--------------------------------------------------------
+
+  ALTER TABLE "MFLOW"."TASKS_MASTER" MODIFY ("ID" NOT NULL ENABLE);
+  ALTER TABLE "MFLOW"."TASKS_MASTER" MODIFY ("START_DATE" NOT NULL ENABLE);
+  ALTER TABLE "MFLOW"."TASKS_MASTER" MODIFY ("STATUS" NOT NULL ENABLE);
