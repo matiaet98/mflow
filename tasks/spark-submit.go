@@ -76,12 +76,12 @@ func buildCommand(task config.Task) (command string, err error) {
 	}
 
 	//Verbose
-	if task.Verbose != "" {
+	if task.Verbose == "yes" {
 		command += "--verbose "
 	}
 
 	//Supervise
-	if task.Supervise != "" {
+	if task.Supervise == "yes" {
 		command += "--supervise "
 	}
 
