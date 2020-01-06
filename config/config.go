@@ -22,6 +22,7 @@ type Global struct {
 	MaxProcessConcurrency  int    `json:"max_process_concurrency"`
 	CheckNewConfigInterval int    `json:"check_new_config_interval"`
 	LogDirectory           string `json:"log_directory"`
+	EnvVars            	   []EnvVars    `json:"env,omitempty"`
 	Tasks                  Tasks
 }
 

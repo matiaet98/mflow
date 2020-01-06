@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
 	"github.com/matiaet98/mflow/config"
 	"github.com/matiaet98/mflow/global"
 	"github.com/matiaet98/mflow/tasks"
@@ -15,28 +16,13 @@ import (
 
 func init() {
 	var err error
-	flag.StringVar(&global.TaskFile, "taskfile", "./tasks.json", "Archivo json con el DAG de tareas a correr")
-	flag.StringVar(&global.DatasourcesFile, "datasources", "./oracle.json", "Archivo json con los strings de conexion a bases de datos")
-	flag.Parse()
-	log.SetLevel(log.InfoLevel)
-	log.SetFormatter(&log.TextFormatter{
-		FullTimestamp:          true,
-		ForceColors:            true,
-		DisableLevelTruncation: true,
-		TimestampFormat:        "2006-01-02 15:04:05",
-	})
+	readFlags()
 	err = config.ReadConfig()
 	if err != nil {
 		log.Fatalln("Error Fatal: Revise la configuracion")
 	}
-	_ = os.Mkdir(config.Config.LogDirectory, os.ModePerm)
-	f, err := os.OpenFile(config.Config.LogDirectory+"mflow.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
-	if err != nil {
-		log.Fatalf("error opening log file: %v", err)
-	}
-	mw := io.MultiWriter(os.Stdout, f)
-	log.SetOutput(mw)
-	log.Infoln("Initializing log")
+	logSetup()
+	envLoad()
 }
 
 func signalCatcher() {
@@ -46,7 +32,40 @@ func signalCatcher() {
 	log.Fatal("Signal de terminacion capturada, se sale")
 }
 
-func taskValidations(){
+func logSetup() {
+	log.SetLevel(log.InfoLevel)
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp:          true,
+		ForceColors:            true,
+		DisableLevelTruncation: true,
+		TimestampFormat:        "2006-01-02 15:04:05",
+	})
+	_ = os.Mkdir(config.Config.LogDirectory, os.ModePerm)
+	f, err := os.OpenFile(config.Config.LogDirectory+"mflow.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
+	if err != nil {
+		log.Fatalf("error opening log file: %v", err)
+	}
+	mw := io.MultiWriter(os.Stdout, f)
+	log.SetOutput(mw)
+	log.Infoln("Initializing log")
+	return
+}
+
+func envLoad() {
+	for env := range config.Config.EnvVars {
+		os.Setenv(config.Config.EnvVars[env].Key, os.ExpandEnv(config.Config.EnvVars[env].Value))
+		println(os.Getenv(config.Config.EnvVars[env].Key))
+		log.Infof("Setting env var %s value %s", config.Config.EnvVars[env].Key, config.Config.EnvVars[env].Value)
+	}
+}
+
+func readFlags() {
+	flag.StringVar(&global.TaskFile, "taskfile", "./tasks.json", "Archivo json con el DAG de tareas a correr")
+	flag.StringVar(&global.DatasourcesFile, "datasources", "./oracle.json", "Archivo json con los strings de conexion a bases de datos")
+	flag.Parse()
+}
+
+func taskValidations() {
 	var err error
 	err = tasks.ValidateTaskIds(config.Config.Tasks.Tasks)
 	if err != nil {

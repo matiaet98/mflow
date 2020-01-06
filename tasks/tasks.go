@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	_ "github.com/godror/godror" //se abstrae su uso con la libreria sql
 	"github.com/matiaet98/mflow/config"
 	"github.com/matiaet98/mflow/global"
-	"time"
 	log "github.com/sirupsen/logrus"
-	_ "github.com/godror/godror" //se abstrae su uso con la libreria sql
+	"time"
 )
 
 const runningStatus string = "RUNNING"
@@ -28,7 +28,7 @@ func runTask(task config.Task, sem chan bool) {
 		runSparkSubmit(task, sem)
 		break
 	}
-	log.Infoln("Finalizo la tarea" + task.ID)
+	log.Infoln("Finalizo la tarea " + task.ID)
 }
 
 //GetPendingTasks : Obtiene las tareas pendientes
@@ -175,14 +175,14 @@ func EndMaster() {
 }
 
 //ValidateTaskIds Valida que no haya IDs repetidos en el archivo de tareas proporcionado
-func ValidateTaskIds(AllTasks []config.Task) (err error){
+func ValidateTaskIds(AllTasks []config.Task) (err error) {
 	dup := make(map[string]int)
 	for _, task := range AllTasks {
 		_, exists := dup[task.ID]
-		if exists{
+		if exists {
 			err = errors.New("Hay tareas duplicadas, se sale")
-			log.Error("La tarea "+task.ID+" esta duplicada")
-		} else{
+			log.Error("La tarea " + task.ID + " esta duplicada")
+		} else {
 			dup[task.ID]++
 		}
 	}
@@ -190,20 +190,20 @@ func ValidateTaskIds(AllTasks []config.Task) (err error){
 }
 
 //ValidateTaskDependencies Valida que las dependencias declaradas existan como tareas
-func ValidateTaskDependencies(AllTasks []config.Task) (err error){
+func ValidateTaskDependencies(AllTasks []config.Task) (err error) {
 	var exist bool
 	for _, task := range AllTasks {
-		for _ , dep := range task.Depends{
+		for _, dep := range task.Depends {
 			exist = false
-			for _, task2 := range AllTasks{
-				if(task2.ID == dep){
+			for _, task2 := range AllTasks {
+				if task2.ID == dep {
 					exist = true
 					return
 				}
 			}
-			if(!exist){
+			if !exist {
 				err = errors.New("Existen errores de dependencias inexistentes, se sale")
-				log.Error("La dependencia ID:"+dep+" de la tarea: "+task.ID+" no existe")
+				log.Error("La dependencia ID:" + dep + " de la tarea: " + task.ID + " no existe")
 			}
 		}
 	}
@@ -211,15 +211,15 @@ func ValidateTaskDependencies(AllTasks []config.Task) (err error){
 }
 
 //ValidateTaskCiclicDependencies Valida que entre dependencias declaradas no haya circulares
-func ValidateTaskCiclicDependencies(AllTasks []config.Task) (err error){
+func ValidateTaskCiclicDependencies(AllTasks []config.Task) (err error) {
 	for _, task := range AllTasks {
-		for _ , dep := range task.Depends {
+		for _, dep := range task.Depends {
 			for _, task2 := range AllTasks {
-				if(task2.ID == dep){
-					for _ , dep2 := range task2.Depends {
-						if(dep2 == task.ID){
+				if task2.ID == dep {
+					for _, dep2 := range task2.Depends {
+						if dep2 == task.ID {
 							err = errors.New("Existen errores de dependencias circulares, se sale")
-							log.Error("Error de dependencias circulares entre las tareas "+task.ID+" y "+task2.ID)
+							log.Error("Error de dependencias circulares entre las tareas " + task.ID + " y " + task2.ID)
 						}
 					}
 				}

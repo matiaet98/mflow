@@ -1,5 +1,19 @@
 {
     "max_process_concurrency": 3,
     "check_new_config_interval": 1,
-    "log_directory": "./logs/"
+    "log_directory": "./logs/",
+    "env":[
+        {
+            "key":"MYVAR",
+            "value":"valor1"
+        },
+        {
+            "key":"MYVAR",
+            "value":"$MYVAR:valor2"
+        },
+        {
+            "key":"MYVAR3",
+            "value":"valor3"
+        }
+    ]
 }
