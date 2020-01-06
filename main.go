@@ -60,6 +60,7 @@ func envLoad() {
 }
 
 func readFlags() {
+	flag.StringVar(&global.ConfigFile, "config", "./config.json", "Archivo json con la configuracion central")
 	flag.StringVar(&global.TaskFile, "taskfile", "./tasks.json", "Archivo json con el DAG de tareas a correr")
 	flag.StringVar(&global.DatasourcesFile, "datasources", "./oracle.json", "Archivo json con los strings de conexion a bases de datos")
 	flag.Parse()

@@ -5,9 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-
 	"github.com/matiaet98/mflow/global"
-
 	log "github.com/sirupsen/logrus"
 )
 
@@ -107,7 +105,7 @@ func getConfigs(path string, conf interface{}) error {
 
 // ReadConfig : Lee el archivo de configuracion.
 func ReadConfig() (err error) {
-	err = getConfigs("config.json", &Config)
+	err = getConfigs(global.ConfigFile, &Config)
 	if err != nil {
 		log.Panicln(err)
 	}
