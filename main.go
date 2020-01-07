@@ -2,16 +2,15 @@ package main
 
 import (
 	"flag"
+	log "github.com/sirupsen/logrus"
 	"io"
+	"mflow/config"
+	"mflow/global"
+	"mflow/tasks"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/matiaet98/mflow/config"
-	"github.com/matiaet98/mflow/global"
-	"github.com/matiaet98/mflow/tasks"
-	log "github.com/sirupsen/logrus"
 )
 
 func init() {

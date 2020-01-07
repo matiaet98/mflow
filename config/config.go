@@ -2,13 +2,11 @@ package config
 
 import (
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
+	"mflow/global"
 	"os"
 	"path/filepath"
-
-	"github.com/matiaet98/mflow/global"
-
-	log "github.com/sirupsen/logrus"
 )
 
 //Config : Global donde se guarda la configuracion
@@ -19,10 +17,10 @@ var Ora Oracle
 
 // Global : struct de configuracion.
 type Global struct {
-	MaxProcessConcurrency  int    `json:"max_process_concurrency"`
-	CheckNewConfigInterval int    `json:"check_new_config_interval"`
-	LogDirectory           string `json:"log_directory"`
-	EnvVars            	   []EnvVars    `json:"env,omitempty"`
+	MaxProcessConcurrency  int       `json:"max_process_concurrency"`
+	CheckNewConfigInterval int       `json:"check_new_config_interval"`
+	LogDirectory           string    `json:"log_directory"`
+	EnvVars                []EnvVars `json:"env,omitempty"`
 	Tasks                  Tasks
 }
 
@@ -60,7 +58,7 @@ type Task struct {
 	NumExecutors       string       `json:"num-executors,omitempty"`
 	DriverMemory       string       `json:"driver-memory,omitempty"`
 	DriverCores        string       `json:"driver-cores,omitempty"`
-	Verbose			   string		`json:"verbose,omitempty"`
+	Verbose            string       `json:"verbose,omitempty"`
 	Supervise          string       `json:"supervise,omitempty"`
 	IngestorFile       string       `json:"ingestor-file,omitempty"`
 	Class              string       `json:"class,omitempty"`

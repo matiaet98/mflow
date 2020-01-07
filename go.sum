@@ -2,8 +2,8 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/go-kit/kit v0.9.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-logfmt/logfmt v0.4.0/go.mod h1:3RMwSq7FuexP4Kalkev3ejPJsZTpXXBr9+V4qmtdjCk=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
-github.com/godror/godror v0.9.1 h1:OsuUFd8fsgncTxmv2jPlY8BBpvZl3K51mTdEAZTEs3o=
-github.com/godror/godror v0.9.1/go.mod h1:06LLZykQEXjuUYiVKBa7Ls+AvbUZ8sbtolIALCeL/jw=
+github.com/godror/godror v0.10.0 h1:IKDOEkjd1ni9qajvXIITY4qaYpj+r71Yc03UagzPnlo=
+github.com/godror/godror v0.10.0/go.mod h1:9MVLtu25FBJBMHkPs0m3Ngf/VmwGcLpM2HS8PlNGw9U=
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515/go.mod h1:+0opPa2QZZtGFBFZlji/RkVcI2GknAs/DXo4wKdlNEc=

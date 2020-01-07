@@ -21,6 +21,6 @@ mflow
 #vendor
 vendor
 
-logs
+logs/*.log
 
 release

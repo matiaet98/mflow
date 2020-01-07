@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/matiaet98/mflow/config"
-	"github.com/matiaet98/mflow/global"
+	"mflow/config"
+	"mflow/global"
 
-	log "github.com/sirupsen/logrus"
 	_ "github.com/godror/godror" //se abstrae su uso con la libreria sql
+	log "github.com/sirupsen/logrus"
 )
 
 func runSparkSubmit(task config.Task, sem chan bool) {

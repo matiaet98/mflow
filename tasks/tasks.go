@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	_ "github.com/godror/godror" //se abstrae su uso con la libreria sql
-	"github.com/matiaet98/mflow/config"
-	"github.com/matiaet98/mflow/global"
 	log "github.com/sirupsen/logrus"
+	"mflow/config"
+	"mflow/global"
 	"time"
 )
 
