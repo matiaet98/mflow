@@ -8,3 +8,6 @@ var TaskFile string
 
 //DatasourcesFile : Archivo con los strings de conexion
 var DatasourcesFile string
+
+//ConfigFile : Archivo con la configuracion central del proceso
+var ConfigFile string

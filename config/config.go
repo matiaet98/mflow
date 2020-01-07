@@ -105,7 +105,7 @@ func getConfigs(path string, conf interface{}) error {
 
 // ReadConfig : Lee el archivo de configuracion.
 func ReadConfig() (err error) {
-	err = getConfigs("config.json", &Config)
+	err = getConfigs(global.ConfigFile, &Config)
 	if err != nil {
 		log.Panicln(err)
 	}
