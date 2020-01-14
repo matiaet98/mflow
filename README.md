@@ -1,6 +1,6 @@
 # MFlow
 
-Matiflow: Herramienta para generar DAGs de ejecucion de procesos. Inicialmente acepta procesos bash y oracle.
+Mflow: Herramienta para generar DAGs de ejecucion de procesos. Inicialmente acepta procesos bash y oracle.
 
 - [MFlow](#mflow)
   - [Configuraciones](#configuraciones)
@@ -159,6 +159,9 @@ Ejemplo: **oracle.json**
     ]
 }
 ~~~
+
+### Nota AFIP:
+Para poder correr con sudo es necesario usar el helper script mflow.sh
 
 
 ### Instalacion
