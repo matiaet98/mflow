@@ -1,0 +1,21 @@
+{
+    "tasks": [
+        {
+            "id": "tarea1",
+            "type": "bash",
+            "command": "./test_tasks/tarea5.sh"
+        },
+        {
+            "id": "tarea2",
+            "type": "bash",
+            "command": "./test_tasks/tarea5.sh"
+        },
+        {
+            "id": "tarea3",
+            "type": "bash",
+            "command": "./test_tasks/tarea5.sh",
+            "depends": ["tarea2"]
+        }
+        
+    ]
+}
