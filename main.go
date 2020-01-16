@@ -81,7 +81,15 @@ func taskValidations() {
 	}
 }
 
-//Salir : Se ejecuta cuando se sale del programa
+func checkConfigChanges() {
+	for {
+		time.Sleep(time.Second * time.Duration(config.Config.CheckNewConfigInterval))
+		err := config.ReadConfig()
+		if err != nil {
+			log.Infoln("Error Fatal: Revise la configuracion")
+		}
+	}
+}
 
 func main() {
 	go signalCatcher()
@@ -92,9 +100,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("No puedo crear el master: " + err.Error())
 	}
+	go checkConfigChanges()
 	for len(pendingTasks) > 0 {
 		tasks.RunTasks(pendingTasks, config.Config.MaxProcessConcurrency)
-		time.Sleep(time.Second * time.Duration(config.Config.CheckNewConfigInterval))
 		pendingTasks = tasks.GetPendingTasks(config.Config.Tasks.Tasks)
 	}
 	tasks.EndMaster()
