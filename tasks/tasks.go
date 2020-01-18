@@ -15,8 +15,10 @@ import (
 const (
 	runningStatus string = "RUNNING"
 	noneStatus    string = "NONE"
+	startedStatus string = "STARTED"
 	failedStatus  string = "FAILED"
 	successStatus string = "SUCCESS"
+	endedStatus   string = "ENDED"
 )
 
 func runTask(task config.Task, sem chan bool) {
@@ -100,30 +102,6 @@ func getConnection(name string) config.OracleConn {
 	return conn
 }
 
-func createTask(taskID string) (err error) {
-	conn := getConnection("mflow")
-
-	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer db.Close()
-	tx, err := db.Begin()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	command := fmt.Sprintf("begin mflow.pkg_taskman.create_task(%v,'%v'); end;", global.IDMaster, taskID)
-	_, err = tx.Exec(command)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	err = tx.Commit()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return
-}
-
 //CreateMaster : Crea el master de tareas para esta corrida
 func CreateMaster() (err error) {
 	conn := getConnection("mflow")
@@ -137,13 +115,13 @@ func CreateMaster() (err error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	command := `declare
-		l_id number;
-		begin
-		mflow.pkg_taskman.create_master(:l_id);
-		end;
-	`
-	_, err = tx.Exec(command, sql.Named("l_id", sql.Out{Dest: &global.IDMaster}))
+	tx.QueryRow(`select mflow.seq_tasks_master.nextval from dual`).Scan(&global.IDMaster)
+
+	command := fmt.Sprintf(`
+		insert into mflow.tasks_master(id,start_date,end_date,status)
+		values(%v,sysdate,null,'%v')
+	`, global.IDMaster, startedStatus)
+	_, err = tx.Exec(command)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -166,12 +144,12 @@ func EndMaster() {
 	if err != nil {
 		log.Panicln(err)
 	}
-	const command string = `
-		begin
-		mflow.pkg_taskman.end_master(:id_master);
-		end;
-	`
-	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster))
+	command := fmt.Sprintf(`
+		update tasks_master
+		set status = '%v', end_date = sysdate
+		where id = %v
+	`, endedStatus, global.IDMaster)
+	_, err = tx.Exec(command)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -182,17 +160,29 @@ func EndMaster() {
 	return
 }
 
-//ValidateTaskIds Valida que no haya IDs repetidos en el archivo de tareas proporcionado
-func ValidateTaskIds(AllTasks []config.Task) (err error) {
-	dup := make(map[string]int)
-	for _, task := range AllTasks {
-		_, exists := dup[task.ID]
-		if exists {
-			err = errors.New("Hay tareas duplicadas, se sale")
-			log.Error("La tarea " + task.ID + " esta duplicada")
-		} else {
-			dup[task.ID]++
-		}
+func createTask(taskID string) (err error) {
+	conn := getConnection("mflow")
+
+	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer db.Close()
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	command := fmt.Sprintf(`
+		insert into mflow.tasks(id_master,id_task,start_date,end_date,status)
+    	values (%v,'%v',sysdate,null,'%v')
+	`, global.IDMaster, taskID, noneStatus)
+	_, err = tx.Exec(command)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Fatalln(err)
 	}
 	return
 }
@@ -218,46 +208,6 @@ func ResetTasks() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-}
-
-//ValidateTaskDependencies Valida que las dependencias declaradas existan como tareas
-func ValidateTaskDependencies(AllTasks []config.Task) (err error) {
-	var exist bool
-	for _, task := range AllTasks {
-		for _, dep := range task.Depends {
-			exist = false
-			for _, task2 := range AllTasks {
-				if task2.ID == dep {
-					exist = true
-					return
-				}
-			}
-			if !exist {
-				err = errors.New("Existen errores de dependencias inexistentes, se sale")
-				log.Error("La dependencia ID:" + dep + " de la tarea: " + task.ID + " no existe")
-			}
-		}
-	}
-	return
-}
-
-//ValidateTaskCiclicDependencies Valida que entre dependencias declaradas no haya circulares
-func ValidateTaskCiclicDependencies(AllTasks []config.Task) (err error) {
-	for _, task := range AllTasks {
-		for _, dep := range task.Depends {
-			for _, task2 := range AllTasks {
-				if task2.ID == dep {
-					for _, dep2 := range task2.Depends {
-						if dep2 == task.ID {
-							err = errors.New("Existen errores de dependencias circulares, se sale")
-							log.Error("Error de dependencias circulares entre las tareas " + task.ID + " y " + task2.ID)
-						}
-					}
-				}
-			}
-		}
-	}
-	return
 }
 
 func getTaskStatus(IDTask string) (string, time.Time, error) {
@@ -325,4 +275,59 @@ func setTaskStatus(IDTask string, status string) (string, error) {
 		log.Fatalln(err)
 	}
 	return status, nil
+}
+
+//ValidateTaskIds Valida que no haya IDs repetidos en el archivo de tareas proporcionado
+func ValidateTaskIds(AllTasks []config.Task) (err error) {
+	dup := make(map[string]int)
+	for _, task := range AllTasks {
+		_, exists := dup[task.ID]
+		if exists {
+			err = errors.New("Hay tareas duplicadas, se sale")
+			log.Error("La tarea " + task.ID + " esta duplicada")
+		} else {
+			dup[task.ID]++
+		}
+	}
+	return
+}
+
+//ValidateTaskDependencies Valida que las dependencias declaradas existan como tareas
+func ValidateTaskDependencies(AllTasks []config.Task) (err error) {
+	var exist bool
+	for _, task := range AllTasks {
+		for _, dep := range task.Depends {
+			exist = false
+			for _, task2 := range AllTasks {
+				if task2.ID == dep {
+					exist = true
+					return
+				}
+			}
+			if !exist {
+				err = errors.New("Existen errores de dependencias inexistentes, se sale")
+				log.Error("La dependencia ID:" + dep + " de la tarea: " + task.ID + " no existe")
+			}
+		}
+	}
+	return
+}
+
+//ValidateTaskCiclicDependencies Valida que entre dependencias declaradas no haya circulares
+func ValidateTaskCiclicDependencies(AllTasks []config.Task) (err error) {
+	for _, task := range AllTasks {
+		for _, dep := range task.Depends {
+			for _, task2 := range AllTasks {
+				if task2.ID == dep {
+					for _, dep2 := range task2.Depends {
+						if dep2 == task.ID {
+							err = errors.New("Existen errores de dependencias circulares, se sale")
+							log.Error("Error de dependencias circulares entre las tareas " + task.ID + " y " + task2.ID)
+						}
+					}
+				}
+			}
+		}
+	}
+	return
 }
