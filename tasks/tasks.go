@@ -8,13 +8,16 @@ import (
 	log "github.com/sirupsen/logrus"
 	"mflow/config"
 	"mflow/global"
+	"strconv"
 	"time"
 )
 
-const runningStatus string = "RUNNING"
-const noneStatus string = "NONE"
-const failedStatus string = "FAILED"
-const successStatus string = "SUCCESS"
+const (
+	runningStatus string = "RUNNING"
+	noneStatus    string = "NONE"
+	failedStatus  string = "FAILED"
+	successStatus string = "SUCCESS"
+)
 
 func runTask(task config.Task, sem chan bool) {
 	switch task.Type {
@@ -194,6 +197,29 @@ func ValidateTaskIds(AllTasks []config.Task) (err error) {
 	return
 }
 
+//ResetTasks : reset tasks
+func ResetTasks() {
+	conn := getConnection("mflow")
+	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer db.Close()
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	const command string = `delete mflow.tasks where id_master = :id_master and status = :status`
+	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("status", runningStatus))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
 //ValidateTaskDependencies Valida que las dependencias declaradas existan como tareas
 func ValidateTaskDependencies(AllTasks []config.Task) (err error) {
 	var exist bool
@@ -276,15 +302,23 @@ func setTaskStatus(IDTask string, status string) (string, error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	command := `
-	begin
-	mflow.pkg_taskman.update_task(:id_master, :id_task,:status);
-	end;
-	`
-	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask), sql.Named("status", status))
+	var endDate string
+	if status == runningStatus {
+		endDate = "null"
+	} else {
+		endDate = "sysdate"
+	}
+	command := fmt.Sprintf(`
+	update tasks
+    set status = '%s',
+    end_date = %s
+    where id_master = %s
+    and id_task = '%s'
+	`, status, endDate, strconv.Itoa(global.IDMaster), IDTask)
+	_, err = tx.Exec(command)
+
 	if err != nil {
 		log.Fatalln(err)
-
 	}
 	err = tx.Commit()
 	if err != nil {

@@ -11,3 +11,6 @@ var DatasourcesFile string
 
 //ConfigFile : Archivo con la configuracion central del proceso
 var ConfigFile string
+
+//ResumeTask : Tarea a resumir
+var ResumeTask string
