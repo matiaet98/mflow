@@ -9,6 +9,7 @@ import (
 	"mflow/tasks"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -62,6 +63,7 @@ func readFlags() {
 	flag.StringVar(&global.ConfigFile, "config", "./config.json", "Archivo json con la configuracion central")
 	flag.StringVar(&global.TaskFile, "taskfile", "./tasks.json", "Archivo json con el DAG de tareas a correr")
 	flag.StringVar(&global.DatasourcesFile, "datasources", "./oracle.json", "Archivo json con los strings de conexion a bases de datos")
+	flag.StringVar(&global.ResumeTask, "resume", "", "Master ID de tarea a resumir")
 	flag.Parse()
 }
 
@@ -81,20 +83,36 @@ func taskValidations() {
 	}
 }
 
-//Salir : Se ejecuta cuando se sale del programa
+func checkConfigChanges() {
+	for {
+		time.Sleep(time.Second * time.Duration(config.Config.CheckNewConfigInterval))
+		err := config.ReadConfig()
+		if err != nil {
+			log.Infoln("Error Fatal: Revise la configuracion")
+		}
+	}
+}
 
 func main() {
 	go signalCatcher()
 	taskValidations()
 	var err error
-	err = tasks.CreateMaster()
-	pendingTasks := tasks.GetPendingTasks(config.Config.Tasks.Tasks)
+	if global.ResumeTask != "" {
+		global.IDMaster, err = strconv.Atoi(global.ResumeTask)
+		if err != nil {
+			log.Fatal("El numero de tarea a resumir fue mal ingresado")
+		}
+		tasks.ResetTasks()
+	} else {
+		err = tasks.CreateMaster()
+	}
 	if err != nil {
 		log.Fatalf("No puedo crear el master: " + err.Error())
 	}
+	pendingTasks := tasks.GetPendingTasks(config.Config.Tasks.Tasks)
+	go checkConfigChanges()
 	for len(pendingTasks) > 0 {
 		tasks.RunTasks(pendingTasks, config.Config.MaxProcessConcurrency)
-		time.Sleep(time.Second * time.Duration(config.Config.CheckNewConfigInterval))
 		pendingTasks = tasks.GetPendingTasks(config.Config.Tasks.Tasks)
 	}
 	tasks.EndMaster()

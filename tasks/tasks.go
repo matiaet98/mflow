@@ -8,13 +8,18 @@ import (
 	log "github.com/sirupsen/logrus"
 	"mflow/config"
 	"mflow/global"
+	"strconv"
 	"time"
 )
 
-const runningStatus string = "RUNNING"
-const noneStatus string = "NONE"
-const failedStatus string = "FAILED"
-const successStatus string = "SUCCESS"
+const (
+	runningStatus string = "RUNNING"
+	noneStatus    string = "NONE"
+	startedStatus string = "STARTED"
+	failedStatus  string = "FAILED"
+	successStatus string = "SUCCESS"
+	endedStatus   string = "ENDED"
+)
 
 func runTask(task config.Task, sem chan bool) {
 	switch task.Type {
@@ -74,6 +79,7 @@ func RunTasks(Tasks []config.Task, maxParallel int) {
 		if dependenciesStatus(task) == successStatus {
 			sem <- true
 			log.Infoln("Iniciando la tarea " + task.ID)
+			createTask(task.ID)
 			setTaskStatus(task.ID, runningStatus)
 			go runTask(task, sem)
 		} else if dependenciesStatus(task) == failedStatus {
@@ -109,32 +115,12 @@ func CreateMaster() (err error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	command := `declare
-		l_id number;
-		begin
-		mflow.pkg_taskman.create_master(:l_id);
-		end;
-	`
-	_, err = tx.Exec(command, sql.Named("l_id", sql.Out{Dest: &global.IDMaster}))
-	if err != nil {
-		log.Fatalln(err)
-	}
-	err = tx.Commit()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	tx, err = db.Begin()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	command = `declare
-		l_id number;
-		begin
-	`
-	for x := range config.Config.Tasks.Tasks {
-		command = fmt.Sprintf("%s mflow.pkg_taskman.create_task(%v,'%v');\n", command, global.IDMaster, config.Config.Tasks.Tasks[x].ID)
-	}
-	command = fmt.Sprintf("%s end;\n", command)
+	tx.QueryRow(`select mflow.seq_tasks_master.nextval from dual`).Scan(&global.IDMaster)
+
+	command := fmt.Sprintf(`
+		insert into mflow.tasks_master(id,start_date,end_date,status)
+		values(%v,sysdate,null,'%v')
+	`, global.IDMaster, startedStatus)
 	_, err = tx.Exec(command)
 	if err != nil {
 		log.Fatalln(err)
@@ -158,12 +144,12 @@ func EndMaster() {
 	if err != nil {
 		log.Panicln(err)
 	}
-	const command string = `
-		begin
-		mflow.pkg_taskman.end_master(:id_master);
-		end;
-	`
-	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster))
+	command := fmt.Sprintf(`
+		update tasks_master
+		set status = '%v', end_date = sysdate
+		where id = %v
+	`, endedStatus, global.IDMaster)
+	_, err = tx.Exec(command)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -172,6 +158,123 @@ func EndMaster() {
 		log.Panicln(err)
 	}
 	return
+}
+
+func createTask(taskID string) (err error) {
+	conn := getConnection("mflow")
+
+	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer db.Close()
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	command := fmt.Sprintf(`
+		insert into mflow.tasks(id_master,id_task,start_date,end_date,status)
+    	values (%v,'%v',sysdate,null,'%v')
+	`, global.IDMaster, taskID, noneStatus)
+	_, err = tx.Exec(command)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return
+}
+
+//ResetTasks : reset tasks
+func ResetTasks() {
+	conn := getConnection("mflow")
+	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer db.Close()
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	const command string = `delete mflow.tasks where id_master = :id_master and status = :status`
+	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("status", runningStatus))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func getTaskStatus(IDTask string) (string, time.Time, error) {
+	conn := getConnection("mflow")
+	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer db.Close()
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	var status string
+	var fecha time.Time
+	const command string = `declare
+		status varchar2(20);
+		fecha date;
+		begin
+		mflow.pkg_taskman.get_status(:id_master,:id_task,:status,:fecha);
+		end;
+	`
+	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask), sql.Named("status", sql.Out{Dest: &status}), sql.Named("fecha", sql.Out{Dest: &fecha}))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return status, fecha, nil
+}
+
+func setTaskStatus(IDTask string, status string) (string, error) {
+	conn := getConnection("mflow")
+	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer db.Close()
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	var endDate string
+	if status == runningStatus {
+		endDate = "null"
+	} else {
+		endDate = "sysdate"
+	}
+	command := fmt.Sprintf(`
+	update tasks
+    set status = '%s',
+    end_date = %s
+    where id_master = %s
+    and id_task = '%s'
+	`, status, endDate, strconv.Itoa(global.IDMaster), IDTask)
+	_, err = tx.Exec(command)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return status, nil
 }
 
 //ValidateTaskIds Valida que no haya IDs repetidos en el archivo de tareas proporcionado
@@ -227,63 +330,4 @@ func ValidateTaskCiclicDependencies(AllTasks []config.Task) (err error) {
 		}
 	}
 	return
-}
-
-func getTaskStatus(IDTask string) (string, time.Time, error) {
-	conn := getConnection("mflow")
-	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer db.Close()
-	tx, err := db.Begin()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	var status string
-	var fecha time.Time
-	const command string = `declare
-		status varchar2(20);
-		fecha date;
-		begin
-		mflow.pkg_taskman.get_status(:id_master,:id_task,:status,:fecha);
-		end;
-	`
-	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask), sql.Named("status", sql.Out{Dest: &status}), sql.Named("fecha", sql.Out{Dest: &fecha}))
-	if err != nil {
-		log.Fatalln(err)
-	}
-	err = tx.Commit()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return status, fecha, nil
-}
-
-func setTaskStatus(IDTask string, status string) (string, error) {
-	conn := getConnection("mflow")
-	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer db.Close()
-	tx, err := db.Begin()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	command := `
-	begin
-	mflow.pkg_taskman.update_task(:id_master, :id_task,:status);
-	end;
-	`
-	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask), sql.Named("status", status))
-	if err != nil {
-		log.Fatalln(err)
-
-	}
-	err = tx.Commit()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return status, nil
 }
