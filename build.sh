@@ -18,15 +18,15 @@ build_first(){
 build(){
 	mkdir -p "release/${APP_NAME}-${VERSION}"
         go build -o "release/${APP_NAME}-${VERSION}/${APP_NAME}" -v
-        pushd release
-        tar -czvf "${APP_NAME}-${VERSION}.tar.gz" "./${APP_NAME}-${VERSION}"
-        rm -fr "${APP_NAME}-${VERSION}"
+        pushd "release/${APP_NAME}-${VERSION}"
+        tar -czvf "${APP_NAME}-${VERSION}.tar.gz" "${APP_NAME}"
+        rm -fr "${APP_NAME}"
         popd
 }
 
 
 release(){
-   pushd release
+   pushd release/${APP_NAME}-${VERSION}
    md5sum ${APP_NAME}-${VERSION}.tar.gz | awk '{print $1}' > ${APP_NAME}-${VERSION}.tar.gz.md5
    sha1sum ${APP_NAME}-${VERSION}.tar.gz | awk '{print $1}' > ${APP_NAME}-${VERSION}.tar.gz.sha1
    echo "Usuario sua: "
@@ -70,6 +70,7 @@ case "$1" in
    run)  run;;
    clean) clean;;
    getdeps) getdeps;;
+   test) test;;
    *) echo "usage $0 build_first|build|release|run|getdeps|clean|test" >&2
       exit 1
     ;;
