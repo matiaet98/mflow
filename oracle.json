@@ -2,7 +2,7 @@
     "connections":[
         {
             "name": "mflow",
-            "connection_string": "(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=10.0.0.2)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=FISCO.matinet)))",
+            "connection_string": "(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=11.0.0.2)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=FISCO.matinet)))",
             "user": "MFLOW",
             "password": "MFLOW"
         },
