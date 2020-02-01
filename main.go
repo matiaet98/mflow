@@ -16,14 +16,12 @@ import (
 )
 
 func init() {
-	var err error
 	readFlags()
-	err = config.ReadConfig()
-	if err != nil {
-		log.Fatalln("Error Fatal: Revise la configuracion")
-	}
+	config.ReadCoreConfig()
 	logSetup()
 	envLoad()
+	config.ReadDatabaseConfig()
+	config.ReadTasksConfig()
 }
 
 func signalCatcher() {
@@ -88,10 +86,7 @@ func taskValidations() {
 func checkConfigChanges() {
 	for {
 		time.Sleep(time.Second * time.Duration(config.Config.CheckNewConfigInterval))
-		err := config.ReadConfig()
-		if err != nil {
-			log.Infoln("Error Fatal: Revise la configuracion")
-		}
+		config.ReadCoreConfig()
 	}
 }
 

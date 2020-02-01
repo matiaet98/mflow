@@ -2,11 +2,12 @@ package config
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"mflow/global"
 	"os"
 	"path/filepath"
+
+	log "github.com/sirupsen/logrus"
 )
 
 //Config : Global donde se guarda la configuracion
@@ -103,19 +104,43 @@ func getConfigs(path string, conf interface{}) error {
 	return err
 }
 
-// ReadConfig : Lee el archivo de configuracion.
-func ReadConfig() (err error) {
-	err = getConfigs(global.ConfigFile, &Config)
+// ReadCoreConfig : Lee el archivo de configuracion core.
+func ReadCoreConfig() {
+	err := getConfigs(global.ConfigFile, &Config)
 	if err != nil {
-		log.Panicln(err)
+		log.Error("No se pudo leer la configuracion core")
+		log.Fatalln(err)
 	}
-	err = getConfigs(global.DatasourcesFile, &Ora)
+	return
+}
+
+// ReadDatabaseConfig : Lee el archivo de configuracion de datasources.
+func ReadDatabaseConfig() {
+	err := getConfigs(global.DatasourcesFile, &Ora)
 	if err != nil {
-		log.Panicln(err)
+		log.Error("No se pudo leer la configuracion de la base")
+		log.Fatalln(err)
 	}
-	err = getConfigs(global.TaskFile, &Config.Tasks)
+	return
+}
+
+// ReadTasksConfig : Lee el archivo de configuracion de tareas.
+func ReadTasksConfig() {
+	err := getConfigs(global.TaskFile, &Config.Tasks)
 	if err != nil {
-		log.Panicln(err)
+		log.Error("No se pudo leer la configuracion de tareas")
+		log.Fatalln(err)
+	}
+	if global.OneShotTask != "" {
+		var OSTask []Task
+		for _, task := range Config.Tasks.Tasks {
+			if global.OneShotTask == task.ID {
+				task.Depends = nil
+				OSTask = append(OSTask, task)
+				break
+			}
+		}
+		Config.Tasks.Tasks = OSTask
 	}
 	return
 }
