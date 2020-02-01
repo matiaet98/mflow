@@ -77,7 +77,6 @@ func RunTasks(Tasks []config.Task, maxParallel int) {
 		if dependenciesStatus(task) == successStatus {
 			sem <- true
 			log.Infoln("Iniciando la tarea " + task.ID)
-			createTask(task.ID)
 			setTaskStatus(task.ID, runningStatus)
 			go runTask(task, sem)
 		} else if dependenciesStatus(task) == failedStatus {
@@ -100,30 +99,6 @@ func getConnection(name string) config.OracleConn {
 	return conn
 }
 
-func createTask(taskID string) (err error) {
-	conn := getConnection("mflow")
-
-	db, err := sql.Open("godror", conn.User+"/"+conn.Password+"@"+conn.ConnectionString)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer db.Close()
-	tx, err := db.Begin()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	command := fmt.Sprintf("begin mflow.pkg_taskman.create_task(%v,'%v'); end;", global.IDMaster, taskID)
-	_, err = tx.Exec(command)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	err = tx.Commit()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return
-}
-
 //CreateMaster : Crea el master de tareas para esta corrida
 func CreateMaster() (err error) {
 	conn := getConnection("mflow")
@@ -144,6 +119,26 @@ func CreateMaster() (err error) {
 		end;
 	`
 	_, err = tx.Exec(command, sql.Named("l_id", sql.Out{Dest: &global.IDMaster}))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	tx, err = db.Begin()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	command = `declare
+		l_id number;
+		begin
+	`
+	for x := range config.Config.Tasks.Tasks {
+		command = fmt.Sprintf("%s mflow.pkg_taskman.create_task(%v,'%v');\n", command, global.IDMaster, config.Config.Tasks.Tasks[x].ID)
+	}
+	command = fmt.Sprintf("%s end;\n", command)
+	_, err = tx.Exec(command)
 	if err != nil {
 		log.Fatalln(err)
 	}
