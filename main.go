@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"mflow/config"
 	"mflow/global"
@@ -12,6 +11,8 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -64,6 +65,7 @@ func readFlags() {
 	flag.StringVar(&global.TaskFile, "taskfile", "./tasks.json", "Archivo json con el DAG de tareas a correr")
 	flag.StringVar(&global.DatasourcesFile, "datasources", "./oracle.json", "Archivo json con los strings de conexion a bases de datos")
 	flag.StringVar(&global.ResumeTask, "resume", "", "Master ID de tarea a resumir")
+	flag.StringVar(&global.OneShotTask, "oneshot", "", "Para cuando se quiere correr solo una tarea del archivo de tareas. No valida dependencias")
 	flag.Parse()
 }
 

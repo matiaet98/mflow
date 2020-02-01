@@ -47,7 +47,13 @@ func GetPendingTasks(AllTasks []config.Task) []config.Task {
 			continue
 		}
 		if status == noneStatus {
-			PendingTasks = append(PendingTasks, task)
+			if global.OneShotTask == task.ID {
+				PendingTasks = append(PendingTasks, task)
+				break
+			}
+			if global.OneShotTask == "" {
+				PendingTasks = append(PendingTasks, task)
+			}
 		}
 	}
 	return PendingTasks
@@ -77,6 +83,13 @@ func dependenciesStatus(task config.Task) string {
 func RunTasks(Tasks []config.Task, maxParallel int) {
 	sem := make(chan bool, maxParallel)
 	for _, task := range Tasks {
+		if global.OneShotTask == task.ID {
+			sem <- true
+			log.Infoln("Iniciando la tarea " + task.ID)
+			setTaskStatus(task.ID, runningStatus)
+			go runTask(task, sem)
+			break
+		}
 		if dependenciesStatus(task) == successStatus {
 			sem <- true
 			log.Infoln("Iniciando la tarea " + task.ID)
@@ -128,6 +141,9 @@ func CreateMaster() (err error) {
 	err = tx.Commit()
 	if err != nil {
 		log.Fatalln(err)
+	}
+	for x := range config.Config.Tasks.Tasks {
+		createTask(config.Config.Tasks.Tasks[x].ID)
 	}
 	return
 }
@@ -223,16 +239,15 @@ func getTaskStatus(IDTask string) (string, time.Time, error) {
 	}
 	var status string
 	var fecha time.Time
-	const command string = `declare
-		status varchar2(20);
-		fecha date;
-		begin
-		mflow.pkg_taskman.get_status(:id_master,:id_task,:status,:fecha);
-		end;
+	const command string = `
+		select status,start_date
+    	from tasks
+    	where id_master = :id_master
+    	and id_task = :id_task
 	`
-	_, err = tx.Exec(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask), sql.Named("status", sql.Out{Dest: &status}), sql.Named("fecha", sql.Out{Dest: &fecha}))
+	err = tx.QueryRow(command, sql.Named("id_master", global.IDMaster), sql.Named("id_task", IDTask)).Scan(&status, &fecha)
 	if err != nil {
-		log.Fatalln(err)
+		status = noneStatus
 	}
 	err = tx.Commit()
 	if err != nil {
