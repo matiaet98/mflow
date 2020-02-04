@@ -26,6 +26,7 @@ build(){
 
 
 release(){
+   build
    pushd release/${APP_NAME}-${VERSION}
    md5sum ${APP_NAME}-${VERSION}.tar.gz | awk '{print $1}' > ${APP_NAME}-${VERSION}.tar.gz.md5
    sha1sum ${APP_NAME}-${VERSION}.tar.gz | awk '{print $1}' > ${APP_NAME}-${VERSION}.tar.gz.sha1
@@ -46,7 +47,7 @@ test(){
 
 clean(){ 
 	go clean
-	rm -f release/*
+	rm -fr release/*
 }
 
 run(){
