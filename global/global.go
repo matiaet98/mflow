@@ -14,3 +14,6 @@ var ConfigFile string
 
 //ResumeTask : Tarea a resumir
 var ResumeTask string
+
+//OneShotTask : Para cuando se quiere correr solo una tarea del archivo de tareas
+var OneShotTask string

@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"mflow/config"
 	"mflow/global"
@@ -12,17 +11,17 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {
-	var err error
 	readFlags()
-	err = config.ReadConfig()
-	if err != nil {
-		log.Fatalln("Error Fatal: Revise la configuracion")
-	}
+	config.ReadCoreConfig()
 	logSetup()
 	envLoad()
+	config.ReadDatabaseConfig()
+	config.ReadTasksConfig()
 }
 
 func signalCatcher() {
@@ -64,6 +63,7 @@ func readFlags() {
 	flag.StringVar(&global.TaskFile, "taskfile", "./tasks.json", "Archivo json con el DAG de tareas a correr")
 	flag.StringVar(&global.DatasourcesFile, "datasources", "./oracle.json", "Archivo json con los strings de conexion a bases de datos")
 	flag.StringVar(&global.ResumeTask, "resume", "", "Master ID de tarea a resumir")
+	flag.StringVar(&global.OneShotTask, "oneshot", "", "Para cuando se quiere correr solo una tarea del archivo de tareas. No valida dependencias")
 	flag.Parse()
 }
 
@@ -86,10 +86,7 @@ func taskValidations() {
 func checkConfigChanges() {
 	for {
 		time.Sleep(time.Second * time.Duration(config.Config.CheckNewConfigInterval))
-		err := config.ReadConfig()
-		if err != nil {
-			log.Infoln("Error Fatal: Revise la configuracion")
-		}
+		config.ReadCoreConfig()
 	}
 }
 
