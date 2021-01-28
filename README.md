@@ -203,7 +203,6 @@ time mflow --taskfile /home/mestevez/siper/c1.json &> /dev/null &
 ### TODO
 - [ ] Scheduling: Hoy la herramienta de por si no maneja un scheduler interno ya que para eso existe CERO (La idea es que la corrida de mflow se dispare a travez de tivoli). No obstante, si fuese necesario, se pueden usar herramientas nativas de linux como anacron para lograr el scheduling.
 - [ ] Retry: Agregar la opcion de reintentar una tarea cuando falla, y que sea configurable la cantidad de reintentos posibles
-- [ ] Crear Dockerfile para containerizar el proceso
 - [ ] Test units
 - [ ] Boilerplate con la estructura necesaria para crear mas plugins
 - [ ] Exponer un endpoint REST para consultar las tareas
