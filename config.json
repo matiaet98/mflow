@@ -1,5 +1,5 @@
 {
-    "max_process_concurrency": 10,
+    "max_process_concurrency": 15,
     "check_new_config_interval": 1,
     "log_directory": "./logs/"
 }
